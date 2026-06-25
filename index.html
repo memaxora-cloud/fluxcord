@@ -4,600 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FluxCord Shop — Premium Digital Showcase</title>
-    <style>
-        /* --- CORE CONFIGURATION & VARIABLES --- */
-        :root {
-            --bg-main: #09090b;
-            --bg-card: #131316;
-            --bg-nav: rgba(15, 15, 18, 0.85);
-            --primary-violet: #8b5cf6;
-            --primary-violet-glow: rgba(139, 92, 246, 0.15);
-            --accent-green: #22c55e;
-            --accent-green-glow: rgba(34, 197, 94, 0.2);
-            --text-main: #f4f4f5;
-            --text-muted: #a1a1aa;
-            --border-color: #27272a;
-            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: var(--font-family);
-            overflow-x: hidden;
-            line-height: 1.5;
-        }
-
-        /* --- MODERN GLOWING AMBIENCE --- */
-        body::before {
-            content: "";
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            top: -100px;
-            left: -100px;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(0,0,0,0) 70%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        body::after {
-            content: "";
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            top: 600px;
-            right: -200px;
-            background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(0,0,0,0) 70%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* --- PROMOTIONAL MODAL POP-UP --- */
-        .promo-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 5, 5, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        .promo-overlay:not(:target) {
-            /* Handled elegantly so it clears when clicking the hidden anchor tag */
-        }
-
-        .promo-card {
-            background: var(--bg-card);
-            border: 2px solid var(--primary-violet);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            padding: 2.5rem 2rem 2rem 2rem;
-            position: relative;
-            box-shadow: 0 0 40px var(--primary-violet-glow);
-            text-align: center;
-        }
-
-        .promo-close {
-            position: absolute;
-            top: 16px;
-            left: 16px; /* Strict top-left placement request */
-            background: #27272a;
-            color: var(--text-main);
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .promo-close:hover {
-            background: #ef4444;
-        }
-
-        .promo-badge {
-            background: linear-gradient(90deg, var(--primary-violet), var(--accent-green));
-            color: #000;
-            font-weight: 800;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-
-        .promo-title {
-            font-size: 1.75rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #fff 60%, var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .promo-subtitle {
-            color: var(--accent-green);
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .promo-deals {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .promo-deal-item {
-            background: rgba(25, 25, 30, 0.6);
-            border: 1px solid var(--border-color);
-            padding: 1rem;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .promo-deal-name {
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .promo-deal-price {
-            color: var(--accent-green);
-            font-weight: 700;
-            background: var(--accent-green-glow);
-            padding: 2px 10px;
-            border-radius: 6px;
-        }
-
-        .promo-features {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
-            padding-top: 1rem;
-        }
-
-        .promo-features span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .promo-features span::before {
-            content: "•";
-            color: var(--primary-violet);
-        }
-
-        /* --- HEADER & NAVIGATION --- */
-        header {
-            position: sticky;
-            top: 0;
-            background: var(--bg-nav);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 100;
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-placeholder {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary-violet), var(--accent-green));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            color: #000;
-        }
-
-        .logo-img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-        }
-
-        .brand-name {
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .brand-name span {
-            color: var(--accent-green);
-        }
-
-        .btn-discord {
-            background: var(--primary-violet);
-            color: #fff;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-discord:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
-            background: #7c3aed;
-        }
-
-        /* --- HERO SECTION --- */
-        .hero {
-            max-width: 800px;
-            margin: 5rem auto 3rem auto;
-            text-align: center;
-            padding: 0 1.5rem;
-        }
-
-        .hero-badge {
-            background: var(--primary-violet-glow);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            color: var(--primary-violet);
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            letter-spacing: -1.5px;
-            line-height: 1.15;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero h1 span {
-            background: linear-gradient(90deg, var(--primary-violet), var(--accent-green));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero p {
-            color: var(--text-muted);
-            font-size: 1.15rem;
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
-        }
-
-        /* --- GATEWAY NOTICE BAR --- */
-        .showcase-notice {
-            background: linear-gradient(90deg, rgba(139,92,246,0.1) 0%, rgba(34,197,94,0.1) 100%);
-            border: 1px dashed rgba(255,255,255,0.1);
-            max-width: 1200px;
-            margin: 0 auto 4rem auto;
-            padding: 1.25rem;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            text-align: center;
-            width: calc(100% - 3rem);
-        }
-
-        /* --- NAVIGATION CATEGORY FILTERS --- */
-        .category-filter {
-            max-width: 1200px;
-            margin: 0 auto 3rem auto;
-            padding: 0 1.5rem;
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .filter-tab {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-        }
-
-        .filter-tab:hover {
-            color: var(--text-main);
-            border-color: var(--primary-violet);
-            background: rgba(139, 92, 246, 0.05);
-        }
-
-        /* --- PRODUCT GRID ARCHITECTURE --- */
-        .shop-container {
-            max-width: 1200px;
-            margin: 0 auto 6rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .category-block {
-            margin-bottom: 5rem;
-            scroll-margin-top: 100px;
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 2rem;
-            border-left: 4px solid var(--primary-violet);
-            padding-left: 12px;
-        }
-
-        .category-header h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .category-header span {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            background: #18181b;
-            padding: 4px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-        }
-
-        /* --- SELLAUTH STYLE CARDS --- */
-        .product-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 1.75rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(139, 92, 246, 0.4);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .product-top {
-            margin-bottom: 1.5rem;
-        }
-
-        .product-badge {
-            background: var(--primary-violet-glow);
-            color: var(--primary-violet);
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 0.75rem;
-            text-transform: uppercase;
-        }
-
-        .product-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* --- PRICE LAYOUTS --- */
-        .pricelist-wrapper {
-            background: rgba(10, 10, 12, 0.5);
-            border-radius: 8px;
-            padding: 0.75rem;
-            margin-bottom: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            font-size: 0.9rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .price-row:last-child {
-            border-bottom: none;
-        }
-
-        .price-name {
-            color: var(--text-main);
-        }
-
-        .price-val {
-            font-weight: 700;
-            color: var(--accent-green);
-        }
-
-        /* --- FEATURE LAYOUTS --- */
-        .features-wrapper {
-            margin-top: 1rem;
-        }
-
-        .feature-title {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-
-        .feature-item {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
-        }
-
-        .feature-item::before {
-            content: "✓";
-            color: var(--accent-green);
-            font-weight: bold;
-        }
-
-        .feature-item.rule::before {
-            content: "⚠";
-            color: #f59e0b;
-        }
-
-        /* --- CARD ACTION --- */
-        .card-action-btn {
-            background: #1c1c21;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-
-        .product-card:hover .card-action-btn {
-            background: var(--primary-violet);
-            border-color: var(--primary-violet);
-            color: #fff;
-            box-shadow: 0 4px 12px var(--primary-violet-glow);
-        }
-
-        /* --- PAYMENT INFO FOOTER --- */
-        .payment-strip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 1rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .payment-methods {
-            background: #18181b;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto 4rem auto;
-        }
-
-        .payment-methods p {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 0.75rem;
-            letter-spacing: 1px;
-        }
-
-        .payment-badges {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-weight: 700;
-            font-size: 0.95rem;
-        }
-
-        .payment-badge {
-            background: #27272a;
-            padding: 4px 12px;
-            border-radius: 6px;
-            color: var(--text-main);
-        }
-
-        footer {
-            background: #0c0c0e;
-            border-top: 1px solid var(--border-color);
-            padding: 2rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* --- RESPONSIVENESS SYSTEM --- */
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .products-grid { grid-template-columns: 1fr; }
-            .showcase-notice { flex-direction: column; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- LIMITED TIME OFFER POP-UP -->
     <div class="promo-overlay" id="discount-modal">
         <div class="promo-card">
             <a href="#close" class="promo-close" onclick="document.getElementById('discount-modal').style.display='none'; return false;">✕</a>
@@ -622,15 +32,13 @@
                 <span>First Come, First Served</span>
             </div>
 
-            <a href="https://discord.gg/A7QCyhG2Bf" class="card-action-btn" style="background: var(--primary-violet); color: white; border: none;">Claim via Discord</a>
+            <a href="https://discord.gg/A7QCyhG2Bf" class="card-action-btn" style="background: var(--primary-violet); color: white; border: none; margin-top: 1.5rem;">Claim via Discord</a>
         </div>
     </div>
 
-    <!-- HEADER / LOGO BAR -->
     <header>
         <div class="nav-container">
             <div class="logo-section">
-                <!-- Fallback premium shape structure referencing fluxcord.png configuration -->
                 <img class="logo-img" src="fluxcord.png" alt="FluxCord" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="logo-placeholder" style="display:none;">FC</div>
                 <div class="brand-name">FluxCord<span>Shop</span></div>
@@ -639,21 +47,38 @@
         </div>
     </header>
 
-    <!-- HERO INTRODUCTION -->
     <section class="hero">
-        <div class="hero-badge">⚡ 2026 Fleet-optimized Infrastructure</div>
+        <div class="hero-badge">⚡ Modern SaaS Asset Marketplace</div>
         <h1>Your Ultimate Gateway for <span>Premium Digital Assets</span></h1>
         <p>Explore high-quality Discord products, OTT subscriptions, keys, and fully customized bot development frameworks.</p>
     </section>
 
-    <!-- HUB DESIGN SHOWCASE NOTICE BAR -->
+    <section class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-card-prime">
+                <div class="stat-glow violet"></div>
+                <h2 class="stat-number violet-text">9,274+</h2>
+                <p class="stat-label">Products Sold</p>
+            </div>
+            <div class="stat-card-prime featured">
+                <div class="stat-glow green"></div>
+                <h2 class="stat-number green-text">5.0+</h2>
+                <p class="stat-label">Rating</p>
+            </div>
+            <div class="stat-card-prime">
+                <div class="stat-glow violet"></div>
+                <h2 class="stat-number violet-text">6,000+</h2>
+                <p class="stat-label">Happy Customers</p>
+            </div>
+        </div>
+    </section>
+
     <div class="showcase-notice">
         <span style="color: var(--accent-green); font-weight: 700;">📌 CATALOGUE SHOWCASE ONLY:</span>
         <span style="color: var(--text-main);">Direct automation checkout pipelines run entirely inside our active Discord instance.</span>
         <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" style="color: var(--primary-violet); font-weight: 600; text-decoration: underline;">Join to Purchase →</a>
     </div>
 
-    <!-- QUICK SECTION ANCHORS -->
     <div class="category-filter">
         <a href="#discord-assets" class="filter-tab">👾 Discord Ecosystem</a>
         <a href="#ott-subscriptions" class="filter-tab">🍿 OTT Subscriptions</a>
@@ -661,10 +86,8 @@
         <a href="#custom-bots" class="filter-tab">💻 Python Engineering</a>
     </div>
 
-    <!-- MAIN EXHILARATING MARKET Showcase -->
     <main class="shop-container">
 
-        <!-- CATEGORY 1: DISCORD ECOSYS -->
         <div class="category-block" id="discord-assets">
             <div class="category-header">
                 <h2>Discord Products</h2>
@@ -672,7 +95,6 @@
             </div>
             <div class="products-grid">
                 
-                <!-- Item 1: Members -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Community Grow</div>
@@ -696,7 +118,6 @@
                     </div>
                 </div>
 
-                <!-- Item 2: Accounts -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Aged Profiles</div>
@@ -722,7 +143,6 @@
                     </div>
                 </div>
 
-                <!-- Item 3: Nitro subscription -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Subscribes</div>
@@ -746,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- Item 4: Boosts -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Perks Unlock</div>
@@ -764,13 +183,12 @@
                             <div class="feature-title">Product Matrix</div>
                             <div class="feature-item">Guaranteed 25-30 Days Longevity</div>
                             <div class="feature-item">100% Safe & Legal Injection</div>
-                            <div class="feature-item rule">No replacement if revoked due to external Discord Token sweeps</div>
+                            <div class="feature-item rule">No replacement if tokens are swept by external platforms</div>
                         </div>
                         <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Item 5: Cosmetics Shop -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Custom Decoration</div>
@@ -801,16 +219,13 @@
             </div>
         </div>
 
-
-        <!-- CATEGORY 2: OTT SUBSCRIBTIOnS -->
         <div class="category-block" id="ott-subscriptions">
             <div class="category-header">
                 <h2>OTT Subscriptions</h2>
-                <span>8 Outlets available</span>
+                <span>8 Outlets Available</span>
             </div>
             <div class="products-grid">
 
-                <!-- YouTube -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">No Ads</div>
@@ -830,7 +245,6 @@
                     </div>
                 </div>
 
-                <!-- Netflix -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">4K UltraHD</div>
@@ -852,7 +266,6 @@
                     </div>
                 </div>
 
-                <!-- Canva -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Design Hub</div>
@@ -874,7 +287,6 @@
                     </div>
                 </div>
 
-                <!-- Spotify -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Hi-Fi Audio</div>
@@ -894,7 +306,6 @@
                     </div>
                 </div>
 
-                <!-- Amazon Prime -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Prime Video</div>
@@ -915,7 +326,6 @@
                     </div>
                 </div>
 
-                <!-- ChatGPT Plus -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">AI Core</div>
@@ -935,7 +345,6 @@
                     </div>
                 </div>
 
-                <!-- Crunchyroll -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Anime Hub</div>
@@ -955,7 +364,6 @@
                     </div>
                 </div>
 
-                <!-- NordVPN -->
                 <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Secure Privacy</div>
@@ -978,8 +386,6 @@
             </div>
         </div>
 
-
-        <!-- CATEGORY 3: MINECRAFT PRODUCTS -->
         <div class="category-block" id="minecraft-assets">
             <div class="category-header">
                 <h2>Minecraft Products</h2>
@@ -987,8 +393,7 @@
             </div>
             <div class="products-grid">
                 
-                <!-- Game Editions -->
-                <div class="product-card" style="grid-column: span 1;">
+                <div class="product-card">
                     <div class="product-top">
                         <div class="product-badge">Microsoft Core</div>
                         <h3 class="product-title">🟩 Full Game Key Elements</h3>
@@ -1003,13 +408,12 @@
                             <div class="feature-item">100% Secure Digital Signatures</div>
                             <div class="feature-item">Lifetime Warranty Tracking</div>
                             <div class="feature-item">Fast-track delivery (30 Min – 5 Hrs window)</div>
-                            <div class="feature-item">Combo Accounts: full email, pass, and name changes permitted</div>
+                            <div class="feature-item">Combo Accounts: full credential modifications permitted</div>
                         </div>
                         <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Capes Registry -->
                 <div class="product-card" style="grid-column: span 2;">
                     <div class="product-top">
                         <div class="product-badge">Cosmetics</div>
@@ -1037,56 +441,53 @@
             </div>
         </div>
 
-
-        <!-- CATEGORY 4: CUSTOM BOTS -->
         <div class="category-block" id="custom-bots">
             <div class="category-header">
                 <h2>Custom Bots Development</h2>
                 <span>Bespoke Solutions</span>
             </div>
             
-            <div class="product-card" style="background: linear-gradient(145deg, #131316 0%, #1e1135 100%); border: 1px solid var(--primary-violet);">
-                <div style="display: flex; flex-direction: column; md-direction: row; justify-content: space-between; gap: 2rem;">
-                    <div>
+            <div class="product-card" style="background: linear-gradient(145deg, #131316 0%, #112518 100%); border: 1px solid var(--accent-green);">
+                <div class="bot-flex-container">
+                    <div style="flex: 1;">
                         <div class="product-badge" style="background: var(--accent-green-glow); color: var(--accent-green);">Python Engine Architecture</div>
                         <h3 class="product-title" style="font-size: 1.8rem;">🤖 Tailor-made Discord Application Bots</h3>
-                        <p style="color: var(--text-muted); margin-bottom: 1.5rem; max-width: 800px;">
+                        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
                             Need an advanced, hyper-secure, ultra-optimized Discord solution custom built for your platform scales? We script and build fully operational environments for any request.
                         </p>
                         
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
                             <div>
                                 <div style="font-weight: 700; color: var(--accent-green); margin-bottom: 0.5rem;">⚙️ Systems Configured:</div>
                                 <div class="feature-item">Advanced Economy Configurations</div>
                                 <div class="feature-item">Modular Ticket Deployments</div>
-                                <div class="feature-item">Casino &amp; Tiered Mini-Games</div>
+                                <div class="feature-item">Casino & Tiered Mini-Games</div>
                                 <div class="feature-item">Automatic Gateway Verification</div>
                             </div>
                             <div>
                                 <div style="font-weight: 700; color: var(--primary-violet); margin-bottom: 0.5rem;">⚡ Engineering Benefits:</div>
                                 <div class="feature-item">Asynchronous Python Architectures</div>
                                 <div class="feature-item">100% Fully Customizable Content</div>
-                                <div class="feature-item">Clean &amp; Comprehensively commented codebase</div>
+                                <div class="feature-item">Clean & Optimized codebase</div>
                                 <div class="feature-item">Quick Turnaround Deployments</div>
                             </div>
                         </div>
                     </div>
 
-                    <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); min-width: 250px; display: flex; flex-direction: column; justify-content: center;">
-                        <span style="text-transform: uppercase; font-size: 0.8rem; color: var(--text-muted); letter-spacing: 1px;">Pricing Models Begin At</span>
-                        <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-main); margin: 0.5rem 0;">1$ <span style="font-size: 1.5rem; color: var(--accent-green);">/ 135৳</span></div>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Final quote computed via scope complexity analysis</p>
+                    <div class="bot-pricing-card">
+                        <span style="text-transform: uppercase; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px;">Pricing Models Begin At</span>
+                        <div style="font-size: 2.3rem; font-weight: 900; color: var(--text-main); margin: 0.5rem 0;">1$ <span style="font-size: 1.4rem; color: var(--accent-green);">/ 135৳</span></div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem;">Final quote computed via complexity analysis</p>
                         <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="btn-discord" style="justify-content: center;">Submit Project Brief</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PAYMENT PROTOCOLS DISPLAY BAR -->
         <section class="payment-methods">
             <p>Supported Liquidity Routes</p>
             <div class="payment-badges">
-                <span class="payment-badge" style="border-bottom: 2px solid #f7931a;">LTC (Crypto)</span>
+                <span class="payment-badge" style="border-bottom: 2px solid #8b5cf6;">LTC / BTC</span>
                 <span class="payment-badge" style="border-bottom: 2px solid #e11d48;">bKash</span>
                 <span class="payment-badge" style="border-bottom: 2px solid #ea580c;">Nagad</span>
                 <span class="payment-badge" style="border-bottom: 2px solid #2563eb;">UPI Network</span>
@@ -1095,7 +496,6 @@
 
     </main>
 
-    <!-- FOOTER TERMINAL -->
     <footer>
         <p>&copy; 2026 FluxCord Corporation. All visual digital rights reserved.</p>
         <p style="font-size: 0.75rem; color: rgba(255,255,255,0.15); margin-top: 0.5rem;">FluxCord Shop is an independent showcase platform and is not affiliated with Discord Inc., Microsoft Corp., or any named OTT providers.</p>
