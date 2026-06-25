@@ -3,447 +3,1102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FluxCord Shop — Premium Showcase</title>
-    <!-- FontAwesome for Premium Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Link to external CSS stylesheet -->
-    <link rel="stylesheet" href="style.css">
+    <title>FluxCord Shop — Premium Digital Showcase</title>
+    <style>
+        /* --- CORE CONFIGURATION & VARIABLES --- */
+        :root {
+            --bg-main: #09090b;
+            --bg-card: #131316;
+            --bg-nav: rgba(15, 15, 18, 0.85);
+            --primary-violet: #8b5cf6;
+            --primary-violet-glow: rgba(139, 92, 246, 0.15);
+            --accent-green: #22c55e;
+            --accent-green-glow: rgba(34, 197, 94, 0.2);
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --border-color: #27272a;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* --- MODERN GLOWING AMBIENCE --- */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            top: 600px;
+            right: -200px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- PROMOTIONAL MODAL POP-UP --- */
+        .promo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .promo-overlay:not(:target) {
+            /* Handled elegantly so it clears when clicking the hidden anchor tag */
+        }
+
+        .promo-card {
+            background: var(--bg-card);
+            border: 2px solid var(--primary-violet);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2.5rem 2rem 2rem 2rem;
+            position: relative;
+            box-shadow: 0 0 40px var(--primary-violet-glow);
+            text-align: center;
+        }
+
+        .promo-close {
+            position: absolute;
+            top: 16px;
+            left: 16px; /* Strict top-left placement request */
+            background: #27272a;
+            color: var(--text-main);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .promo-close:hover {
+            background: #ef4444;
+        }
+
+        .promo-badge {
+            background: linear-gradient(90deg, var(--primary-violet), var(--accent-green));
+            color: #000;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .promo-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 60%, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .promo-subtitle {
+            color: var(--accent-green);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .promo-deals {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .promo-deal-item {
+            background: rgba(25, 25, 30, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .promo-deal-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .promo-deal-price {
+            color: var(--accent-green);
+            font-weight: 700;
+            background: var(--accent-green-glow);
+            padding: 2px 10px;
+            border-radius: 6px;
+        }
+
+        .promo-features {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+
+        .promo-features span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .promo-features span::before {
+            content: "•";
+            color: var(--primary-violet);
+        }
+
+        /* --- HEADER & NAVIGATION --- */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-nav);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-violet), var(--accent-green));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-name span {
+            color: var(--accent-green);
+        }
+
+        .btn-discord {
+            background: var(--primary-violet);
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-discord:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+            background: #7c3aed;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            max-width: 800px;
+            margin: 5rem auto 3rem auto;
+            text-align: center;
+            padding: 0 1.5rem;
+        }
+
+        .hero-badge {
+            background: var(--primary-violet-glow);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--primary-violet);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, var(--primary-violet), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+
+        /* --- GATEWAY NOTICE BAR --- */
+        .showcase-notice {
+            background: linear-gradient(90deg, rgba(139,92,246,0.1) 0%, rgba(34,197,94,0.1) 100%);
+            border: 1px dashed rgba(255,255,255,0.1);
+            max-width: 1200px;
+            margin: 0 auto 4rem auto;
+            padding: 1.25rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-align: center;
+            width: calc(100% - 3rem);
+        }
+
+        /* --- NAVIGATION CATEGORY FILTERS --- */
+        .category-filter {
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab:hover {
+            color: var(--text-main);
+            border-color: var(--primary-violet);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        /* --- PRODUCT GRID ARCHITECTURE --- */
+        .shop-container {
+            max-width: 1200px;
+            margin: 0 auto 6rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .category-block {
+            margin-bottom: 5rem;
+            scroll-margin-top: 100px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-violet);
+            padding-left: 12px;
+        }
+
+        .category-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .category-header span {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            background: #18181b;
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* --- SELLAUTH STYLE CARDS --- */
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .product-top {
+            margin-bottom: 1.5rem;
+        }
+
+        .product-badge {
+            background: var(--primary-violet-glow);
+            color: var(--primary-violet);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .product-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- PRICE LAYOUTS --- */
+        .pricelist-wrapper {
+            background: rgba(10, 10, 12, 0.5);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .price-row:last-child {
+            border-bottom: none;
+        }
+
+        .price-name {
+            color: var(--text-main);
+        }
+
+        .price-val {
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        /* --- FEATURE LAYOUTS --- */
+        .features-wrapper {
+            margin-top: 1rem;
+        }
+
+        .feature-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .feature-item {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .feature-item::before {
+            content: "✓";
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .feature-item.rule::before {
+            content: "⚠";
+            color: #f59e0b;
+        }
+
+        /* --- CARD ACTION --- */
+        .card-action-btn {
+            background: #1c1c21;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .product-card:hover .card-action-btn {
+            background: var(--primary-violet);
+            border-color: var(--primary-violet);
+            color: #fff;
+            box-shadow: 0 4px 12px var(--primary-violet-glow);
+        }
+
+        /* --- PAYMENT INFO FOOTER --- */
+        .payment-strip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .payment-methods {
+            background: #18181b;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 4rem auto;
+        }
+
+        .payment-methods p {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .payment-badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .payment-badge {
+            background: #27272a;
+            padding: 4px 12px;
+            border-radius: 6px;
+            color: var(--text-main);
+        }
+
+        footer {
+            background: #0c0c0e;
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- RESPONSIVENESS SYSTEM --- */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .products-grid { grid-template-columns: 1fr; }
+            .showcase-notice { flex-direction: column; }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- NAVBAR HEADER -->
-    <header class="site-header fade-in">
-        <div class="header-container">
-            <div class="brand-logo">
-                <!-- FluxCord PNG Logo Implementation -->
-                <img src="fluxcord.png" alt="FluxCord Logo" class="logo-image">
-                <span class="logo-text">Flux<span class="text-red">Cord</span></span>
-            </div>
+    <!-- LIMITED TIME OFFER POP-UP -->
+    <div class="promo-overlay" id="discount-modal">
+        <div class="promo-card">
+            <a href="#close" class="promo-close" onclick="document.getElementById('discount-modal').style.display='none'; return false;">✕</a>
+            <div class="promo-badge">🔥 Limited Time Offer</div>
+            <h3 class="promo-title">Flash Premium Drop</h3>
+            <p class="promo-subtitle">Unbeatable rates. Limited available stock.</p>
             
-            <nav class="main-navigation">
-                <a href="#discord">Discord Services</a>
-                <a href="#smm">SMM Panel</a>
-                <a href="#ott">OTT Premium</a>
-                <a href="#payments">Payments</a>
-            </nav>
+            <div class="promo-deals">
+                <div class="promo-deal-item">
+                    <span class="promo-deal-name">📺 Netflix Premium 4K (Shared)</span>
+                    <span class="promo-deal-price">$0.20 | 30৳</span>
+                </div>
+                <div class="promo-deal-item">
+                    <span class="promo-deal-name">🧡 Crunchyroll Mega Fan</span>
+                    <span class="promo-deal-price">$0.30 | 40৳</span>
+                </div>
+            </div>
 
-            <a href="https://discord.gg/BCqUx2jhsM" target="_blank" class="btn btn-primary nav-discord-btn shadow-pulse">
-                <i class="fab fa-discord"></i> Join Discord to Order
-            </a>
+            <div class="promo-features">
+                <span>Instant Delivery</span>
+                <span>Working Warranty</span>
+                <span>First Come, First Served</span>
+            </div>
+
+            <a href="https://discord.gg/A7QCyhG2Bf" class="card-action-btn" style="background: var(--primary-violet); color: white; border: none;">Claim via Discord</a>
+        </div>
+    </div>
+
+    <!-- HEADER / LOGO BAR -->
+    <header>
+        <div class="nav-container">
+            <div class="logo-section">
+                <!-- Fallback premium shape structure referencing fluxcord.png configuration -->
+                <img class="logo-img" src="fluxcord.png" alt="FluxCord" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-placeholder" style="display:none;">FC</div>
+                <div class="brand-name">FluxCord<span>Shop</span></div>
+            </div>
+            <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="btn-discord">Join Discord Server</a>
         </div>
     </header>
 
-    <!-- HERO PROFILE OVERVIEW -->
-    <section class="hero-section">
-        <div class="hero-glow-1"></div>
-        <div class="hero-glow-2"></div>
-
-        <div class="badge-status float-anim">
-            <span class="pulse-dot"></span>
-            <span>#1 Cheapest Shop</span>
-        </div>
-        
-        <h1 class="hero-title fade-in-up">Elevate Your Presence With <span class="gradient-text">FluxCord</span></h1>
-        <p class="hero-subtitle fade-in-up delay-1">Premium Discord Assets, legacy accounts, custom SMM metrics, and cheap entertainment passes. Fully updated catalog layout.</p>
-
-        <div class="hero-actions fade-in-up delay-2">
-            <a href="https://discord.gg/BCqUx2jhsM" target="_blank" class="btn btn-white"><i class="fab fa-discord"></i> Enter Discord Store</a>
-            <a href="#discord" class="btn btn-secondary">Browse Products</a>
-        </div>
+    <!-- HERO INTRODUCTION -->
+    <section class="hero">
+        <div class="hero-badge">⚡ 2026 Fleet-optimized Infrastructure</div>
+        <h1>Your Ultimate Gateway for <span>Premium Digital Assets</span></h1>
+        <p>Explore high-quality Discord products, OTT subscriptions, keys, and fully customized bot development frameworks.</p>
     </section>
 
-    <!-- CONTAINER CORE -->
-    <main class="main-content-wrapper">
+    <!-- HUB DESIGN SHOWCASE NOTICE BAR -->
+    <div class="showcase-notice">
+        <span style="color: var(--accent-green); font-weight: 700;">📌 CATALOGUE SHOWCASE ONLY:</span>
+        <span style="color: var(--text-main);">Direct automation checkout pipelines run entirely inside our active Discord instance.</span>
+        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" style="color: var(--primary-violet); font-weight: 600; text-decoration: underline;">Join to Purchase →</a>
+    </div>
 
-        <!-- SECTION: DISCORD -->
-        <section id="discord" class="product-section">
-            <div class="section-heading">
-                <div class="heading-line line-red"></div>
-                <h2>Discord Essential Services</h2>
+    <!-- QUICK SECTION ANCHORS -->
+    <div class="category-filter">
+        <a href="#discord-assets" class="filter-tab">👾 Discord Ecosystem</a>
+        <a href="#ott-subscriptions" class="filter-tab">🍿 OTT Subscriptions</a>
+        <a href="#minecraft-assets" class="filter-tab">⛏️ Minecraft Core</a>
+        <a href="#custom-bots" class="filter-tab">💻 Python Engineering</a>
+    </div>
+
+    <!-- MAIN EXHILARATING MARKET Showcase -->
+    <main class="shop-container">
+
+        <!-- CATEGORY 1: DISCORD ECOSYS -->
+        <div class="category-block" id="discord-assets">
+            <div class="category-header">
+                <h2>Discord Products</h2>
+                <span>5 Active Lines</span>
             </div>
-
-            <div class="card-grid">
-                <!-- Members Card -->
-                <div class="product-card card-hover-effect">
-                    <div class="card-inner">
-                        <div class="card-header">
-                            <div class="icon-wrapper icon-red"><i class="fas fa-users"></i></div>
-                            <span class="category-tag">Growth</span>
-                        </div>
-                        <h3 class="card-title">Discord Members <span class="tag-sub">(/per K)</span></h3>
-                        <ul class="item-price-list">
-                            <li><span>Offline Members</span> <strong>$1.0 / 135৳</strong></li>
-                            <li><span>Online Members</span> <strong>$1.7 / 230৳</strong></li>
-                            <li><span>MSG Reactions</span> <strong>$4.5 / 563৳</strong></li>
-                        </ul>
-                    </div>
-                    <a href="https://discord.gg/BCqUx2jhsM" target="_blank" class="card-btn-action btn-hover-red">Purchase on Discord</a>
-                </div>
-
-                <!-- Nitro Card -->
-                <div class="product-card card-hover-effect">
-                    <div class="card-inner">
-                        <div class="card-header">
-                            <div class="icon-wrapper icon-green"><i class="fas fa-bolt"></i></div>
-                            <span class="category-tag">Premium</span>
-                        </div>
-                        <h3 class="card-title">Discord Nitro</h3>
-                        <ul class="item-price-list">
-                            <li><span>Nitro Basic <code class="badge-method">Login</code></span> <strong>$2.4 / 324৳</strong></li>
-                            <li><span>Nitro Basic <code class="badge-method">Gift Link</code></span> <strong>$3.7 / 500৳</strong></li>
-                            <li><span>Nitro Boost <code class="badge-method">Login</code></span> <strong>$6.2 / 837৳</strong></li>
-                            <li><span>Nitro Boost <code class="badge-method">Gift Link</code></span> <strong>$9.3 / 1,255৳</strong></li>
-                        </ul>
-                    </div>
-                    <a href="https://discord.gg/BCqUx2jhsM" target="_blank" class="card-btn-action btn-hover-green">Purchase on Discord</a>
-                </div>
-
-                <!-- Boosts Card -->
-                <div class="product-card card-hover-effect">
-                    <div class="card-inner">
-                        <div class="card-header">
-                            <div class="icon-wrapper icon-red"><i class="fas fa-rocket"></i></div>
-                            <span class="category-tag">Perks</span>
-                        </div>
-                        <h3 class="card-title">Server Boosts <span class="tag-sub">(1 Month)</span></h3>
-                        <ul class="item-price-list">
-                            <li><span>1 Month Boost [2x]</span> <strong>$0.8 / 108৳</strong></li>
-                            <li><span>1 Month Boost [4x]</span> <strong>$1.2 / 108৳</strong></li>
-                            <li><span>1 Month Boost [6x]</span> <strong>$2.4 / 135৳</strong></li>
-                            <li><span>1 Month Boost [14x]</span> <strong>$5.6 / 594৳</strong></li>
-                            <li><span>1 Month Boost [20x]</span> <strong>$8.0 / 837৳</strong></li>
-                        </ul>
-                    </div>
-                    <a href="https://discord.gg/BCqUx2jhsM" target="_blank" class="card-btn-action btn-hover-red">Purchase on Discord</a>
-                </div>
-            </div>
-
-            <!-- Aged Accounts Grid -->
-            <div class="wide-info-block card-hover-effect">
-                <div class="block-title-header">
-                    <div class="icon-wrapper icon-small"><i class="fas fa-calendar-alt"></i></div>
-                    <h3>Aged Legacy Discord Accounts</h3>
-                </div>
-                <div class="accounts-grid">
-                    <div class="account-badge-box">
-                        <p class="acc-year">2015</p><p class="acc-usd text-green">$53</p><p class="acc-bdt">7,155৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2016</p><p class="acc-usd text-green">$10</p><p class="acc-bdt">1,350৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2017</p><p class="acc-usd">$2.8</p><p class="acc-bdt">378৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2018</p><p class="acc-usd">$2.0</p><p class="acc-bdt">270৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2019</p><p class="acc-usd">$1.5</p><p class="acc-bdt">203৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2020</p><p class="acc-usd">$1.2</p><p class="acc-bdt">162৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2021</p><p class="acc-usd">$1.0</p><p class="acc-bdt">135৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2022</p><p class="acc-usd">$0.95</p><p class="acc-bdt">128৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2023</p><p class="acc-usd">$0.9</p><p class="acc-bdt">122৳</p>
-                    </div>
-                    <div class="account-badge-box">
-                        <p class="acc-year">2024</p><p class="acc-usd">$0.8</p><p class="acc-bdt">108৳</p>
-                    </div>
-                    <div class="account-badge-box span-2">
-                        <p class="acc-year">2025</p><p class="acc-usd">$0.5</p><p class="acc-bdt">67৳</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Profile Cosmetics Subtables -->
-            <div class="wide-info-block card-hover-effect">
-                <h3 class="cosmetics-heading"><i class="fas fa-paint-brush text-red"></i> Decorations / Effects / Nameplates</h3>
-                <p class="block-subtitle">Massive custom pricing discounts on original store cosmetic items</p>
+            <div class="products-grid">
                 
-                <div class="split-tables-grid">
-                    <div class="method-table-box">
-                        <h4 class="table-method-title text-red">Method: Via Login</h4>
-                        <div class="table-rows">
-                            <div class="row"><span>$4.99 Tier</span><strong>$2.2 / 297৳</strong></div>
-                            <div class="row"><span>$5.99 Tier</span><strong>$2.4 / 324৳</strong></div>
-                            <div class="row"><span>$6.69 Tier</span><strong>$2.6 / 351৳</strong></div>
-                            <div class="row"><span>$7.99 Tier</span><strong>$2.8 / 378৳</strong></div>
-                            <div class="row"><span>$8.99 Tier</span><strong>$3.0 / 405৳</strong></div>
-                            <div class="row"><span>$9.99 Tier</span><strong>$3.2 / 432৳</strong></div>
-                            <div class="row"><span>$10.99 Tier</span><strong>$3.3 / 446৳</strong></div>
-                            <div class="row"><span>$11.99 Tier</span><strong>$3.6 / 486৳</strong></div>
-                            <div class="row"><span>$12.99 Tier</span><strong>$3.8 / 513৳</strong></div>
-                            <div class="row font-bold"><span>$15.99 Tier</span><strong>$4.5 / 608৳</strong></div>
+                <!-- Item 1: Members -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Community Grow</div>
+                        <h3 class="product-title">👥 Discord Members</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span class="price-name">1K Online Members</span><span class="price-val">3.0$ / 405৳</span></div>
+                            <div class="price-row"><span class="price-name">1K Offline Members</span><span class="price-val">2.0$ / 270৳</span></div>
+                            <div class="price-row"><span class="price-name">Message Reaction</span><span class="price-val">3.7$ / 500৳</span></div>
+                            <div class="price-row"><span class="price-name">Button Reaction</span><span class="price-val">5.0$ / 675৳</span></div>
                         </div>
                     </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Instant Automation Delivery</div>
+                            <div class="feature-item">UHQ Verified Accounts</div>
+                            <div class="feature-item">100% Secure & Term Protection</div>
+                            <div class="feature-item">Random Status / Simulated Activity</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
 
-                    <div class="method-table-box">
-                        <h4 class="table-method-title text-green">Method: Via Gift</h4>
-                        <div class="table-rows">
-                            <div class="row"><span>$4.99 Tier</span><strong>$2.8 / 378৳</strong></div>
-                            <div class="row"><span>$5.99 Tier</span><strong>$3.0 / 405৳</strong></div>
-                            <div class="row"><span>$6.99 Tier</span><strong>$3.3 / 446৳</strong></div>
-                            <div class="row"><span>$7.99 Tier</span><strong>$3.7 / 500৳</strong></div>
-                            <div class="row"><span>$8.99 Tier</span><strong>$4.0 / 540৳</strong></div>
-                            <div class="row"><span>$9.99 Tier</span><strong>$4.2 / 567৳</strong></div>
-                            <div class="row"><span>$10.99 Tier</span><strong>$4.7 / 635৳</strong></div>
-                            <div class="row"><span>$11.99 Tier</span><strong>$5.0 / 675৳</strong></div>
-                            <div class="row"><span>$12.99 Tier</span><strong>$5.2 / 702৳</strong></div>
-                            <div class="row font-bold"><span>$15.99 Tier</span><strong>$5.9 / 797৳</strong></div>
+                <!-- Item 2: Accounts -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Aged Profiles</div>
+                        <h3 class="product-title">🛡️ Discord Accounts</h3>
+                        <div class="pricelist-wrapper" style="max-height: 180px; overflow-y: auto;">
+                            <div class="price-row"><span class="price-name">2015 Vintage Account</span><span class="price-val">53$ / 7,155৳</span></div>
+                            <div class="price-row"><span class="price-name">2016 Account</span><span class="price-val">10$ / 1,350৳</span></div>
+                            <div class="price-row"><span class="price-name">2017 Account</span><span class="price-val">2.8$ / 378৳</span></div>
+                            <div class="price-row"><span class="price-name">2018 Account</span><span class="price-val">2.0$ / 270৳</span></div>
+                            <div class="price-row"><span class="price-name">2019 Account</span><span class="price-val">1.5$ / 203৳</span></div>
+                            <div class="price-row"><span class="price-name">2020-2022 Range</span><span class="price-val">From 0.95$ / 128৳</span></div>
+                            <div class="price-row"><span class="price-name">2023-2025 Range</span><span class="price-val">From 0.5$ / 67৳</span></div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION: SMM PANEL -->
-        <section id="smm" class="product-section">
-            <div class="section-header-flex">
-                <div class="section-heading">
-                    <div class="heading-line line-green"></div>
-                    <h2>Social Media Panel Engines</h2>
-                </div>
-                <span class="rate-badge">Rates specified per 1,000 requests (/k)</span>
-            </div>
-
-            <div class="card-grid">
-                <!-- Discord SMM -->
-                <div class="smm-compact-box card-hover-effect">
-                    <h3 class="smm-box-title"><i class="fab fa-discord text-red"></i> Discord Growth</h3>
-                    <div class="smm-rows">
-                        <div class="smm-item"><span>Online Members</span><strong>$1.7 | 230৳</strong></div>
-                        <div class="smm-item"><span>Offline Members</span><strong>$1.0 | 135৳</strong></div>
-                        <div class="smm-item"><span>Message Reaction</span><strong>$4.5 | 563৳</strong></div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Immediate Token Access</div>
+                            <div class="feature-item">Nitro Claimable Protocols</div>
+                            <div class="feature-item">Fully Fresh Clean Origins</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Youtube SMM -->
-                <div class="smm-compact-box card-hover-effect">
-                    <h3 class="smm-box-title"><i class="fab fa-youtube text-red"></i> YouTube Optimization</h3>
-                    <div class="smm-rows">
-                        <div class="smm-item"><span>Subscribers <code class="m-green">Non-Drop</code></span><strong>$28.0 | 3,780৳</strong></div>
-                        <div class="smm-item"><span>Subscribers <code class="m-red">Drop</code></span><strong>$2.0 | 270৳</strong></div>
-                        <div class="smm-item"><span>Watch Time <code class="m-gray">1H+ Vid</code></span><strong>$1.0 | 135৳</strong></div>
-                        <div class="smm-item"><span>Views <code class="m-green">Non-Drop</code></span><strong>$3.0 | 405৳</strong></div>
-                        <div class="smm-item"><span>Likes <code class="m-green">Non-Drop</code></span><strong>$1.5 | 203৳</strong></div>
-                    </div>
-                </div>
-
-                <!-- Facebook SMM -->
-                <div class="smm-compact-box card-hover-effect">
-                    <h3 class="smm-box-title"><i class="fab fa-facebook text-red"></i> Facebook Marketing</h3>
-                    <div class="smm-rows">
-                        <div class="smm-item"><span>Followers <code class="m-gray">Cheap</code></span><strong>$1.5 | 203৳</strong></div>
-                        <div class="smm-item"><span>Followers <code class="m-green">Fresh</code></span><strong>$2.0 | 270৳</strong></div>
-                        <div class="smm-item"><span>Post Reaction</span><strong>$2.0 | 270৳</strong></div>
-                        <div class="smm-item"><span>Reels View</span><strong>$2.0 | 270৳</strong></div>
-                        <div class="smm-item"><span>Group Members</span><strong>$10.0 | 1,350৳</strong></div>
-                        <div class="smm-item"><span>Shares</span><strong>$1.5 | 203৳</strong></div>
-                    </div>
-                </div>
-
-                <!-- Mix Platform SMM -->
-                <div class="smm-compact-box card-hover-effect">
-                    <h3 class="smm-box-title"><i class="fas fa-hashtag text-red"></i> Media Core Mix</h3>
-                    <div class="smm-rows">
-                        <div class="smm-item"><span>Followers Base</span><strong>$1.5 | 203৳</strong></div>
-                        <div class="smm-item"><span>Channel Members</span><strong>$12.0 | 1,620৳</strong></div>
-                        <div class="smm-item"><span>Shares & Saves</span><strong>$1.0 | 135৳</strong></div>
-                        <div class="smm-item"><span>Likes Ecosystem</span><strong>$1.4 | 189৳</strong></div>
-                        <div class="smm-item"><span>WatchTime Views</span><strong>$1.5 | 203৳</strong></div>
-                    </div>
-                </div>
-
-                <!-- Tiktok SMM -->
-                <div class="smm-compact-box card-hover-effect">
-                    <h3 class="smm-box-title"><i class="fab fa-tiktok text-red"></i> TikTok Velocity</h3>
-                    <div class="smm-rows">
-                        <div class="smm-item"><span>Followers Premium</span><strong>$3.5 | 473৳</strong></div>
-                        <div class="smm-item"><span>Views + Likes Pack</span><strong>$1.0 | 135৳</strong></div>
-                        <div class="smm-item"><span>Profile Shares</span><strong>$1.5 | 203৳</strong></div>
-                    </div>
-                </div>
-
-                <!-- Messaging Channels -->
-                <div class="smm-compact-box card-hover-effect">
-                    <h3 class="smm-box-title"><i class="fab fa-telegram text-red"></i> Network Systems</h3>
-                    <div class="smm-rows">
-                        <div class="smm-item"><span>Telegram Members</span><strong>$1.4 | 189৳</strong></div>
-                        <div class="smm-item"><span>Telegram Reactions</span><strong>$1.0 | 135৳</strong></div>
-                        <div class="smm-item divider-top">
-                            <span class="wa-text"><i class="fab fa-whatsapp"></i> WhatsApp Members</span>
-                            <strong>$4 | 540৳</strong>
+                <!-- Item 3: Nitro subscription -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Subscribes</div>
+                        <h3 class="product-title">💎 Discord Nitro Premium</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span class="price-name">Nitro Basic Monthly (Login)</span><span class="price-val">2.4$ / 324৳</span></div>
+                            <div class="price-row"><span class="price-name">Nitro Basic Monthly (Giftlink)</span><span class="price-val">3.7$ / 500৳</span></div>
+                            <div class="price-row"><span class="price-name">Nitro Boost Monthly (Login)</span><span class="price-val">6.2$ / 837৳</span></div>
+                            <div class="price-row"><span class="price-name">Nitro Boost Monthly (Giftlink)</span><span class="price-val">9.3$ / 1,255৳</span></div>
+                            <div class="price-row"><span class="price-name">Nitro Boost Yearly (Login)</span><span class="price-val">55$ / 7,425৳</span></div>
                         </div>
                     </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Ultra High Quality Nitro</div>
+                            <div class="feature-item">Full Duration Warranty Protection</div>
+                            <div class="feature-item">100% Legal & Safe Acquisition</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
                 </div>
+
+                <!-- Item 4: Boosts -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Perks Unlock</div>
+                        <h3 class="product-title">🚀 Discord Server Boosts</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span class="price-name">1 Month Boost [2x]</span><span class="price-val">0.8$ / 108৳</span></div>
+                            <div class="price-row"><span class="price-name">1 Month Boost [4x]</span><span class="price-val">1.2$ / 108৳</span></div>
+                            <div class="price-row"><span class="price-name">1 Month Boost [6x]</span><span class="price-val">2.0$ / 270৳</span></div>
+                            <div class="price-row"><span class="price-name">1 Month Boost [14x] Tier 3</span><span class="price-val">4.0$ / 540৳</span></div>
+                            <div class="price-row"><span class="price-name">1 Month Boost [20x] Premium</span><span class="price-val">6.0$ / 810৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Guaranteed 25-30 Days Longevity</div>
+                            <div class="feature-item">100% Safe & Legal Injection</div>
+                            <div class="feature-item rule">No replacement if revoked due to external Discord Token sweeps</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
+
+                <!-- Item 5: Cosmetics Shop -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Custom Decoration</div>
+                        <h3 class="product-title">✨ Nameplates & Effects</h3>
+                        <div style="font-size: 0.8rem; padding: 4px; color: var(--primary-violet); font-weight: bold;">Login Method Tier:</div>
+                        <div class="pricelist-wrapper" style="max-height: 100px; overflow-y: auto;">
+                            <div class="price-row"><span>4.99$ Items</span><span>2.2$ / 297৳</span></div>
+                            <div class="price-row"><span>9.99$ Items</span><span>3.2$ / 432৳</span></div>
+                            <div class="price-row"><span>15.99$ Items</span><span>4.5$ / 608৳</span></div>
+                        </div>
+                        <div style="font-size: 0.8rem; padding: 4px; color: var(--accent-green); font-weight: bold;">Gift Method Tier:</div>
+                        <div class="pricelist-wrapper" style="max-height: 100px; overflow-y: auto;">
+                            <div class="price-row"><span>4.99$ Items</span><span>2.8$ / 378৳</span></div>
+                            <div class="price-row"><span>9.99$ Items</span><span>4.2$ / 567৳</span></div>
+                            <div class="price-row"><span>15.99$ Items</span><span>5.9$ / 797৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Full Warranty Pipeline</div>
+                            <div class="feature-item">Unbeatable pricing matrix</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
+
             </div>
-        </section>
+        </div>
 
-        <!-- SECTION: OTT PLATFORMS -->
-        <section id="ott" class="product-section">
-            <div class="section-heading">
-                <div class="heading-line line-red"></div>
-                <h2>OTT Entertainment Premium Node</h2>
+
+        <!-- CATEGORY 2: OTT SUBSCRIBTIOnS -->
+        <div class="category-block" id="ott-subscriptions">
+            <div class="category-header">
+                <h2>OTT Subscriptions</h2>
+                <span>8 Outlets available</span>
             </div>
+            <div class="products-grid">
 
-            <div class="ott-grid">
-                <!-- Box YouTube -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge red-bg">Instant Activation</div>
-                    <span class="ott-brand red-text"><i class="fab fa-youtube"></i> YouTube</span>
-                    <h4 class="ott-title">Premium Access</h4>
-                    <p class="ott-details-meta">Ad-free streaming, YouTube Music Background play included.</p>
-                    <div class="ott-price-bar"><span>1 Month (Inv)</span><strong>99৳</strong></div>
-                </div>
-
-                <!-- Box Netflix -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge dark-bg">UHD 4K Quality</div>
-                    <span class="ott-brand red-text"><i class="fas fa-film"></i> Netflix</span>
-                    <h4 class="ott-title">Premium Shared Screens</h4>
-                    <p class="ott-details-meta">Anti-household lock bypass, personal custom locked profile slots.</p>
-                    <div class="ott-multi-pricing">
-                        <div><span>1 Mo (1 Screen)</span><strong>350৳</strong></div>
-                        <div><span>3 Mo (1 Screen)</span><strong>980৳</strong></div>
-                        <div><span>6 Mo (1 Screen)</span><strong>1,960৳</strong></div>
+                <!-- YouTube -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">No Ads</div>
+                        <h3 class="product-title">🔴 YouTube Premium</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month License</span><span class="price-val">99৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Compliance Mandates</div>
+                            <div class="feature-item rule">Do not modify passwords</div>
+                            <div class="feature-item rule">Strictly individual device connection limit</div>
+                            <div class="feature-item rule">Zero credentials sharing policy (System Tracked)</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Box Canva -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge teal-bg">Pro Features</div>
-                    <span class="ott-brand teal-text"><i class="fas fa-palette"></i> Canva</span>
-                    <h4 class="ott-title">Pro Classroom Upgrade</h4>
-                    <p class="ott-details-meta">Unlock full enterprise branding templates, cloud storage, AI tools.</p>
-                    <div class="ott-multi-pricing">
-                        <div><span>1 Year Access</span><strong>99৳</strong></div>
-                        <div><span>2 Year Access</span><strong>199৳</strong></div>
-                        <div><span>Lifetime Plan</span><strong>399৳</strong></div>
+                <!-- Netflix -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">4K UltraHD</div>
+                        <h3 class="product-title">🎬 Netflix Premium</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month Plan (1 Screen)</span><span class="price-val">350৳</span></div>
+                            <div class="price-row"><span>3 Month Plan (1 Screen)</span><span class="price-val">980৳</span></div>
+                            <div class="price-row"><span>6 Month Plan (1 Screen)</span><span class="price-val">1,960৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Turkey Giftcard Authorized Architecture</div>
+                            <div class="feature-item">Integration onto personal custom email available</div>
+                            <div class="feature-item">Independent Profile Pin lock access</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Box Spotify -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge green-bg">No Ads & Audio HQ</div>
-                    <span class="ott-brand green-text"><i class="fab fa-spotify"></i> Spotify</span>
-                    <h4 class="ott-title">Premium Subscription</h4>
-                    <p class="ott-details-meta">Offline downloading unlocked. High fidelity audio streams.</p>
-                    <div class="ott-multi-pricing">
-                        <div><span>1 Month Premium</span><strong>150৳</strong></div>
-                        <div><span>3 Month Premium</span><strong>350৳</strong></div>
+                <!-- Canva -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Design Hub</div>
+                        <h3 class="product-title">🎨 Canva Pro Premium</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Year Access</span><span class="price-val">99৳</span></div>
+                            <div class="price-row"><span>2 Year Access</span><span class="price-val">199৳</span></div>
+                            <div class="price-row"><span>Lifetime Deployment</span><span class="price-val">399৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">8,000+ Graphic Asset Library unlock</div>
+                            <div class="feature-item">Transparent PNG + Advanced Resizers active</div>
+                            <div class="feature-item">Unlimited full cloud storage integration</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Box Amazon Prime -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge cyan-bg">Prime Video</div>
-                    <span class="ott-brand cyan-text"><i class="fab fa-amazon"></i> Amazon Prime</span>
-                    <h4 class="ott-title">Prime Video Pass</h4>
-                    <p class="ott-details-meta">Access to full Prime library video originals, ultra high definition logs.</p>
-                    <div class="ott-multi-pricing">
-                        <div><span>1 Month Pass</span><strong>95৳</strong></div>
-                        <div><span>6 Month Pass</span><strong>250৳</strong></div>
+                <!-- Spotify -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Hi-Fi Audio</div>
+                        <h3 class="product-title">🎵 Spotify Premium</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month Plan</span><span class="price-val">150৳</span></div>
+                            <div class="price-row"><span>3 Month Plan</span><span class="price-val">350৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Ad-free uninterrupted streaming</div>
+                            <div class="feature-item">High Quality offline sound tracks download</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Box ChatGPT -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge emerald-bg">GPT-4o Access</div>
-                    <span class="ott-brand emerald-text"><i class="fas fa-robot"></i> OpenAI</span>
-                    <h4 class="ott-title">ChatGPT Plus Shared</h4>
-                    <p class="ott-details-meta">Advanced data analysis, image engine DALL-E 3 metrics enabled.</p>
-                    <div class="ott-price-bar"><span>1 Month Shared</span><strong>249৳</strong></div>
-                </div>
-
-                <!-- Box Crunchyroll -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge orange-bg">Mega Fan Tier</div>
-                    <span class="ott-brand orange-text"><i class="fas fa-tv"></i> Crunchyroll</span>
-                    <h4 class="ott-title">Mega Fan Pass</h4>
-                    <p class="ott-details-meta">Simulcast streams directly from Japan, multi-screen offline access.</p>
-                    <div class="ott-multi-pricing">
-                        <div><span>1 Month Pass</span><strong>99৳</strong></div>
-                        <div><span>3 Month Pass</span><strong>119৳</strong></div>
+                <!-- Amazon Prime -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Prime Video</div>
+                        <h3 class="product-title">📦 Amazon Prime Video</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month Deployment</span><span class="price-val">95৳</span></div>
+                            <div class="price-row"><span>6 Month Deployment</span><span class="price-val">250৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Access to Global Prime Originals</div>
+                            <div class="feature-item rule">Advance reservation checkout required</div>
+                            <div class="feature-item rule">Requires customer email & verification routing details</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
 
-                <!-- Box Nord VPN -->
-                <div class="ott-card-box card-hover-effect">
-                    <div class="ott-badge blue-bg">High Anonymity</div>
-                    <span class="ott-brand blue-text"><i class="fas fa-shield-alt"></i> Nord VPN</span>
-                    <h4 class="ott-title">Secure Encrypted VPN</h4>
-                    <p class="ott-details-meta">Ultra fast obfuscated P2P servers with threat protection filters.</p>
-                    <div class="ott-multi-pricing">
-                        <div><span>1 Month Tier</span><strong>119৳</strong></div>
-                        <div><span>3 Month Tier</span><strong>299৳</strong></div>
+                <!-- ChatGPT Plus -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">AI Core</div>
+                        <h3 class="product-title">🧠 ChatGPT Plus Intel</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month Access License</span><span class="price-val">249৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Lowest structural price guaranteed globally</div>
+                            <div class="feature-item rule">Strict 1-Device Login enforcement</div>
+                            <div class="feature-item rule">History integrity protocol (No data modification)</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
                     </div>
                 </div>
+
+                <!-- Crunchyroll -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Anime Hub</div>
+                        <h3 class="product-title">🏮 Crunchyroll Premium</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month Subscription</span><span class="price-val">99৳</span></div>
+                            <div class="price-row"><span>3 Month Subscription</span><span class="price-val">119৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Simulcast HD media rendering array</div>
+                            <div class="feature-item">Zero advertisements or processing lags</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
+
+                <!-- NordVPN -->
+                <div class="product-card">
+                    <div class="product-top">
+                        <div class="product-badge">Secure Privacy</div>
+                        <h3 class="product-title">🌐 Nord VPN Enterprise</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span>1 Month Token</span><span class="price-val">119৳</span></div>
+                            <div class="price-row"><span>3 Month Token</span><span class="price-val">299৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">High performance military encryption framework</div>
+                            <div class="feature-item">Ultra fast P2P streaming nodes unlocked</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
+
             </div>
-        </section>
+        </div>
 
-        <!-- FOOTER PAYMENTS MATRIX -->
-        <section id="payments" class="payment-matrix-section">
-            <div class="payment-layout">
-                <div class="payment-addresses">
-                    <h3>Verified Payment Frameworks</h3>
-                    <p class="payment-disclaimer">Submit transaction logs and execution transaction hash keys inside the Discord active ticketing system interface for instant deployment.</p>
-                    
-                    <div class="wallet-boxes-stack">
-                        <!-- LTC Address Box -->
-                        <div class="wallet-crypto-card card-hover-effect">
-                            <div class="wallet-info-flex">
-                                <div class="w-icon crypto-icon-amber"><i class="fas fa-coins"></i></div>
-                                <div class="w-data">
-                                    <p class="w-lbl">Litecoin Wallet (LTC)</p>
-                                    <p class="w-addr select-all">LULFfKWEV2bpqgFUUGqQD3uL4g29DJFp4p</p>
-                                </div>
+
+        <!-- CATEGORY 3: MINECRAFT PRODUCTS -->
+        <div class="category-block" id="minecraft-assets">
+            <div class="category-header">
+                <h2>Minecraft Products</h2>
+                <span>Global Keys & Capes</span>
+            </div>
+            <div class="products-grid">
+                
+                <!-- Game Editions -->
+                <div class="product-card" style="grid-column: span 1;">
+                    <div class="product-top">
+                        <div class="product-badge">Microsoft Core</div>
+                        <h3 class="product-title">🟩 Full Game Key Elements</h3>
+                        <div class="pricelist-wrapper">
+                            <div class="price-row"><span style="font-weight: 600;">Minecraft Legends Global Key</span><span class="price-val">2.6$ | 350৳</span></div>
+                            <div class="price-row"><span style="font-weight: 600;">Java & Bedrock Combo Account</span><span class="price-val">11.2$ | 1500৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Deployment Metrics</div>
+                            <div class="feature-item">100% Secure Digital Signatures</div>
+                            <div class="feature-item">Lifetime Warranty Tracking</div>
+                            <div class="feature-item">Fast-track delivery (30 Min – 5 Hrs window)</div>
+                            <div class="feature-item">Combo Accounts: full email, pass, and name changes permitted</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
+
+                <!-- Capes Registry -->
+                <div class="product-card" style="grid-column: span 2;">
+                    <div class="product-top">
+                        <div class="product-badge">Cosmetics</div>
+                        <h3 class="product-title">🔮 Rare Cloak & Cape Code Matrix</h3>
+                        <div class="pricelist-wrapper" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div class="price-row"><span>Home Cape (Code)</span><span class="price-val">0.6$ / 80৳</span></div>
+                            <div class="price-row"><span>TIKTOK Cape (Code)</span><span class="price-val">0.8$ / 110৳</span></div>
+                            <div class="price-row"><span>Copper Cape (Code)</span><span class="price-val">0.7$ / 95৳</span></div>
+                            <div class="price-row"><span>Menace Cape (Code)</span><span class="price-val">0.8$ / 105৳</span></div>
+                            <div class="price-row"><span>Optifine Cape (Code)</span><span class="price-val">1.1$ / 149৳</span></div>
+                            <div class="price-row"><span>Builder Cape (Code)</span><span class="price-val">0.5$ / 67৳</span></div>
+                            <div class="price-row"><span>Purple Heart (Code)</span><span class="price-val">3.9$ / 520৳</span></div>
+                            <div class="price-row"><span>Migrator (Account)</span><span class="price-val">9.6$ / 1,295৳</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="features-wrapper">
+                            <div class="feature-title">Product Matrix</div>
+                            <div class="feature-item">Instant official Mojang / Microsoft redeem frameworks</div>
+                        </div>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="card-action-btn">Purchase via Server</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- CATEGORY 4: CUSTOM BOTS -->
+        <div class="category-block" id="custom-bots">
+            <div class="category-header">
+                <h2>Custom Bots Development</h2>
+                <span>Bespoke Solutions</span>
+            </div>
+            
+            <div class="product-card" style="background: linear-gradient(145deg, #131316 0%, #1e1135 100%); border: 1px solid var(--primary-violet);">
+                <div style="display: flex; flex-direction: column; md-direction: row; justify-content: space-between; gap: 2rem;">
+                    <div>
+                        <div class="product-badge" style="background: var(--accent-green-glow); color: var(--accent-green);">Python Engine Architecture</div>
+                        <h3 class="product-title" style="font-size: 1.8rem;">🤖 Tailor-made Discord Application Bots</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1.5rem; max-width: 800px;">
+                            Need an advanced, hyper-secure, ultra-optimized Discord solution custom built for your platform scales? We script and build fully operational environments for any request.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div>
+                                <div style="font-weight: 700; color: var(--accent-green); margin-bottom: 0.5rem;">⚙️ Systems Configured:</div>
+                                <div class="feature-item">Advanced Economy Configurations</div>
+                                <div class="feature-item">Modular Ticket Deployments</div>
+                                <div class="feature-item">Casino &amp; Tiered Mini-Games</div>
+                                <div class="feature-item">Automatic Gateway Verification</div>
                             </div>
-                            <button onclick="navigator.clipboard.writeText('LULFfKWEV2bpqgFUUGqQD3uL4g29DJFp4p'); alert('LTC Wallet Address Copied!');" class="w-copy-btn">Copy</button>
-                        </div>
-                        <!-- bKash Agent Box -->
-                        <div class="wallet-crypto-card card-hover-effect">
-                            <div class="wallet-info-flex">
-                                <div class="w-icon crypto-icon-pink"><i class="fas fa-wallet"></i></div>
-                                <div class="w-data">
-                                    <p class="w-lbl">bKash Personal Wallet</p>
-                                    <p class="w-addr select-all">01873735925</p>
-                                </div>
+                            <div>
+                                <div style="font-weight: 700; color: var(--primary-violet); margin-bottom: 0.5rem;">⚡ Engineering Benefits:</div>
+                                <div class="feature-item">Asynchronous Python Architectures</div>
+                                <div class="feature-item">100% Fully Customizable Content</div>
+                                <div class="feature-item">Clean &amp; Comprehensively commented codebase</div>
+                                <div class="feature-item">Quick Turnaround Deployments</div>
                             </div>
-                            <button onclick="navigator.clipboard.writeText('01873735925'); alert('bKash Number Copied!');" class="w-copy-btn">Copy</button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Operational Box Note -->
-                <div class="order-flow-notice-card card-hover-effect">
-                    <h4 class="flow-title"><i class="fas fa-info-circle text-red"></i> How to Place Orders</h4>
-                    <p class="flow-text">This server architecture operates entirely as an external portfolio display system dashboard wrapper. Buying cycles are executed manually inside the main server node cluster.</p>
-                    <ol class="flow-steps">
-                        <li>Copy specific payment destination node assets.</li>
-                        <li>Initialize an active customer billing support ticket.</li>
-                        <li>Submit transaction verification receipts.</li>
-                    </ol>
-                    <a href="https://discord.gg/BCqUx2jhsM" target="_blank" class="btn btn-primary btn-block shadow-pulse">Launch Discord Ticket Node</a>
+                    <div style="text-align: center; background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); min-width: 250px; display: flex; flex-direction: column; justify-content: center;">
+                        <span style="text-transform: uppercase; font-size: 0.8rem; color: var(--text-muted); letter-spacing: 1px;">Pricing Models Begin At</span>
+                        <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-main); margin: 0.5rem 0;">1$ <span style="font-size: 1.5rem; color: var(--accent-green);">/ 135৳</span></div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Final quote computed via scope complexity analysis</p>
+                        <a href="https://discord.gg/A7QCyhG2Bf" target="_blank" class="btn-discord" style="justify-content: center;">Submit Project Brief</a>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- PAYMENT PROTOCOLS DISPLAY BAR -->
+        <section class="payment-methods">
+            <p>Supported Liquidity Routes</p>
+            <div class="payment-badges">
+                <span class="payment-badge" style="border-bottom: 2px solid #f7931a;">LTC (Crypto)</span>
+                <span class="payment-badge" style="border-bottom: 2px solid #e11d48;">bKash</span>
+                <span class="payment-badge" style="border-bottom: 2px solid #ea580c;">Nagad</span>
+                <span class="payment-badge" style="border-bottom: 2px solid #2563eb;">UPI Network</span>
             </div>
         </section>
 
     </main>
 
-    <!-- FOOTER SIGNATURE TERMINAL -->
-    <footer class="terminal-footer">
-        <p class="footer-copyright">© 2026 FluxCord Store Operations. All Rights Reserved.</p>
-        <p class="footer-system-status">SaaS Portfolio Showcase Server Module • Deployment Active.</p>
+    <!-- FOOTER TERMINAL -->
+    <footer>
+        <p>&copy; 2026 FluxCord Corporation. All visual digital rights reserved.</p>
+        <p style="font-size: 0.75rem; color: rgba(255,255,255,0.15); margin-top: 0.5rem;">FluxCord Shop is an independent showcase platform and is not affiliated with Discord Inc., Microsoft Corp., or any named OTT providers.</p>
     </footer>
 
 </body>
