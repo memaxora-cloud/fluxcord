@@ -193,15 +193,29 @@ function renderProducts() {
           <span>•</span>
           <span>${product.review_count || 0} reviews</span>
         </div>
-        <div class="product-bottom">
+        <div class="product-bottom product-actions">
           <span class="product-price">${money(product.price_bdt)}</span>
-          <button class="primary-button small-button" data-add-product="${product.id}">
-            Add to cart
-          </button>
+          <div class="product-buttons">
+            <button class="primary-button small-button" data-buy-product="${product.id}">
+              Buy Now →
+            </button>
+            <button class="secondary-button small-button" data-add-product="${product.id}">
+              Add to Cart →
+            </button>
+          </div>
         </div>
       </div>
     </article>
   `).join('');
+
+  document.querySelectorAll('[data-buy-product]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const productId = Number(button.dataset.buyProduct);
+      state.cart = [{ id: productId, qty: 1 }];
+      saveCart();
+      await checkout();
+    });
+  });
 
   document.querySelectorAll('[data-add-product]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -354,7 +368,51 @@ function openOtpVerify(email, demoOtp) {
 
       closeModal();
       await refreshUser();
-      toast('Logged in successfully.');
+
+      if (!state.currentUser?.name?.trim()) {
+        await requiredNameModal();
+      } else {
+        toast('Logged in successfully.');
+      }
+    } catch (error) {
+      toast(error.message);
+    }
+  });
+}
+
+async function requiredNameModal() {
+  openModal(`
+    <div class="centered">
+      <h2>Choose your name</h2>
+      <p class="muted">Please set a name for your FluxCord account. This name will be shown on your account and the Top Spenders leaderboard.</p>
+      <form class="form" id="requiredNameForm">
+        <label>
+          Name
+          <input id="requiredName" type="text" maxlength="60" autocomplete="name" placeholder="Your name" required>
+        </label>
+        <button class="primary-button" type="submit">Save Name</button>
+      </form>
+    </div>
+  `);
+
+  $('#requiredNameForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = $('#requiredName').value.trim();
+
+    if (name.length < 2) {
+      toast('Please enter at least 2 characters.');
+      return;
+    }
+
+    try {
+      const result = await api('/api/account/name', {
+        method: 'POST',
+        body: JSON.stringify({ name })
+      });
+
+      state.currentUser = result.user;
+      closeModal();
+      toast('Name saved successfully.');
     } catch (error) {
       toast(error.message);
     }
@@ -518,13 +576,22 @@ async function checkout() {
             Your order <strong>${escapeHtml(result.order_code)}</strong> has been created.
             You will receive your item via Email after payment verification and delivery.
           </p>
-          <button class="primary-button" id="viewOrdersButton">
-            View my orders
-          </button>
+          <div class="modal-actions">
+            <button class="primary-button" id="viewOrdersButton">
+              View my orders →
+            </button>
+            <button class="secondary-button" id="continueShoppingButton">
+              Continue Shopping →
+            </button>
+          </div>
         </div>
       `);
 
       $('#viewOrdersButton').addEventListener('click', accountModal);
+      $('#continueShoppingButton').addEventListener('click', () => {
+        closeModal();
+        document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth' });
+      });
     } catch (error) {
       toast(error.message);
     }
@@ -536,7 +603,13 @@ async function accountModal() {
     const orders = await api('/api/orders');
 
     openModal(`
-      <h2>My Orders</h2>
+      <h2>My Account</h2>
+      <div class="info-box account-profile">
+        <strong>${escapeHtml(state.currentUser?.name || 'Your name')}</strong><br>
+        <small class="muted">${escapeHtml(state.currentUser?.email || '')}</small>
+        <button class="secondary-button small-button" id="editNameButton" style="margin-top:12px">Edit Name</button>
+      </div>
+      <h3>My Orders</h3>
       <p class="muted">Track your orders and open support tickets.</p>
       <div>
         ${orders.length
@@ -558,6 +631,10 @@ async function accountModal() {
         Logout
       </button>
     `);
+
+    $('#editNameButton').addEventListener('click', async () => {
+      await requiredNameModal();
+    });
 
     document.querySelectorAll('[data-view-order]').forEach((button) => {
       button.addEventListener('click', () => {
@@ -713,7 +790,7 @@ async function renderLeaderboard() {
     ? rows.map((row) => `
       <div class="leader-row">
         <span class="leader-rank">#${row.rank}</span>
-        <span class="leader-email">${escapeHtml(row.email)}</span>
+        <span class="leader-name">${escapeHtml(row.name)}</span>
         <strong class="leader-spent">${money(row.spent)}</strong>
       </div>
     `).join('')
@@ -744,6 +821,10 @@ async function init() {
       renderLeaderboard(),
       refreshUser()
     ]);
+
+    if (state.currentUser && !state.currentUser.name?.trim()) {
+      await requiredNameModal();
+    }
   } catch (error) {
     console.error(error);
     toast('Store could not load. Check your Vercel/Supabase setup.');
