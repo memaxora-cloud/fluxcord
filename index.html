@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fluxcord — Ebooks that are actually worth your time</title>
+<meta name="description" content="Fluxcord is a digital ebook store. Pay with bKash, Nagad or crypto and get instant delivery.">
+<link rel="icon" href="assets/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  html[lang="bn"] body { font-family: 'Noto Sans Bengali', 'Inter', sans-serif; }
+  html[lang="bn"] h1, html[lang="bn"] h2, html[lang="bn"] h3, html[lang="bn"] .display { font-family: 'Noto Sans Bengali', 'Unbounded', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo"><img src="assets/logo.svg" alt="Fluxcord"></a>
+    <div class="nav-actions">
+      <div class="lang-switch">
+        <button data-lang="en">EN</button>
+        <button data-lang="bn">বাং</button>
+      </div>
+      <div id="auth-area"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero">
+  <div class="container hero-inner">
+    <div>
+      <div class="eyebrow" data-i18n="hero_eyebrow">Digital ebook store</div>
+      <h1><span data-i18n="hero_title_1">Read something worth</span> <span class="accent" data-i18n="hero_title_accent">your time.</span></h1>
+      <p class="hero-sub" data-i18n="hero_sub">Fluxcord is where I publish every ebook I write — guides, notes and deep dives, delivered straight to your inbox the moment your payment is confirmed.</p>
+      <div class="hero-cta">
+        <a href="#library" class="btn btn-primary" data-i18n="hero_cta_browse">Browse the library</a>
+        <a href="#how" class="btn btn-ghost" data-i18n="hero_cta_how">How buying works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="stat-books">4</b><span data-i18n="hero_stat_books">Ebooks published</span></div>
+        <div class="hero-stat"><b>500+</b><span data-i18n="hero_stat_readers">Happy readers</span></div>
+        <div class="hero-stat"><b>&lt; 30m</b><span data-i18n="hero_stat_delivery">Delivery after payment</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="stack-cover">
+        <div class="cover-tag" data-i18n="cover_tag">Featured</div>
+        <div class="cover-body">
+          <h3 id="featured-title">The Focused Founder</h3>
+          <p id="featured-desc">A no-fluff playbook for building a one-person online business from zero.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== LIBRARY / SHOP ===================== -->
+<section class="section" id="library">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 data-i18n="library_title">The library</h2>
+        <p data-i18n="library_sub">Every title, priced fairly, updated as I publish. Pick one and check out in under a minute.</p>
+      </div>
+      <div class="filters" id="category-filters"></div>
+    </div>
+    <div class="grid" id="book-grid"></div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 data-i18n="how_title">How buying works</h2>
+        <p data-i18n="how_sub">No card required, no account needed to browse — just to check out.</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="num">01</div><h3 data-i18n="step1_t">Pick your ebook</h3><p data-i18n="step1_d">Browse the library and hit Buy now on anything you like.</p></div>
+      <div class="step"><div class="num">02</div><h3 data-i18n="step2_t">Choose a payment method</h3><p data-i18n="step2_d">Pay with bKash, Nagad or crypto (LTC / BTC / USDT) — whichever is easiest for you.</p></div>
+      <div class="step"><div class="num">03</div><h3 data-i18n="step3_t">Send payment & submit proof</h3><p data-i18n="step3_d">Send the exact amount, then paste your Transaction ID / TXID into the form.</p></div>
+      <div class="step"><div class="num">04</div><h3 data-i18n="step4_t">Get your download link</h3><p data-i18n="step4_d">Once approved (usually within minutes), your ebook lands in your Library and your email.</p></div>
+    </div>
+    <div style="height:26px"></div>
+    <div class="pay-strip">
+      <span class="label" data-i18n="pay_label">Accepted payment methods</span>
+      <span class="pay-pill bkash"><span class="dot"></span>bKash</span>
+      <span class="pay-pill nagad"><span class="dot"></span>Nagad</span>
+      <span class="pay-pill crypto"><span class="dot"></span>Litecoin (LTC)</span>
+      <span class="pay-pill crypto"><span class="dot"></span>Bitcoin (BTC)</span>
+      <span class="pay-pill crypto"><span class="dot"></span>USDT</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="container footer-inner">
+    <img src="assets/logo.svg" alt="Fluxcord">
+    <p class="muted" data-i18n="footer_rights" style="font-size:13px;">All ebooks are for personal reading only.</p>
+    <div class="footer-links">
+      <a href="#" data-i18n="footer_contact">Contact</a>
+      <a href="#" data-i18n="footer_terms">Terms</a>
+      <a href="#" data-i18n="footer_refunds">Refund policy</a>
+      <a href="admin.html" data-i18n="nav_admin">Admin</a>
+    </div>
+  </div>
+</footer>
+
+<div id="modal-root"></div>
+<div id="toast" class="toast"></div>
+
+<script src="js/lang.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
