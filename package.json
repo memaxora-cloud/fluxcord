@@ -1,0 +1,25 @@
+{
+  "name": "fluxcord-store",
+  "version": "2.0.0",
+  "private": true,
+  "description": "FluxCord e-book ecommerce store for Vercel + Supabase",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.3"
+  },
+  "devDependencies": {
+    "vercel": "^48.0.0"
+  }
+}

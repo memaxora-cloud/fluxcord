@@ -1,0 +1,25 @@
+FLUXCORD A-Z DEPLOY CHECKLIST
+
+[ ] Run supabase/schema.sql in Supabase SQL Editor
+[ ] Copy Supabase Project URL
+[ ] Copy Supabase Service Role Key
+[ ] Create private GitHub repository
+[ ] Upload this whole project
+[ ] Import GitHub repo into Vercel
+[ ] Add all variables from .env.example in Vercel
+[ ] Set DEMO_OTP=false for production
+[ ] Redeploy Vercel after adding variables
+[ ] Open /api/health
+[ ] Open /admin.html
+[ ] Login with ADMIN_EMAIL + ADMIN_PASSWORD
+[ ] Add a real test product
+[ ] Test OTP
+[ ] Test cart
+[ ] Test checkout
+[ ] Test order ID
+[ ] Test support ticket
+[ ] Test admin chat
+[ ] Test PAID status
+[ ] Test DELIVERED status + email
+[ ] Connect fluxcord.store domain
+[ ] Verify all payment details before launch
