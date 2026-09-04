@@ -437,9 +437,14 @@ app.post('/api/auth/verify-otp', async (req, res) => {
       .eq('id', user.id);
   }
 
+  if (!user.name || !String(user.name).trim()) {
+    user.name = '';
+  }
+
   setSession(res, {
     id: user.id,
     email: user.email,
+    name: user.name,
     admin: false
   });
 
@@ -447,7 +452,8 @@ app.post('/api/auth/verify-otp', async (req, res) => {
     ok: true,
     user: {
       id: user.id,
-      email: user.email
+      email: user.email,
+      name: user.name
     }
   });
 });
@@ -457,7 +463,7 @@ app.post('/api/auth/logout', (req, res) => {
   return res.json({ ok: true });
 });
 
-app.get('/api/me', (req, res) => {
+app.get('/api/me', async (req, res) => {
   const token = req.cookies.fc_session;
 
   if (!token) {
@@ -465,11 +471,55 @@ app.get('/api/me', (req, res) => {
   }
 
   try {
-    const user = jwt.verify(token, JWT_SECRET);
-    return res.json({ user });
+    const sessionUser = jwt.verify(token, JWT_SECRET);
+
+    if (sessionUser.admin) {
+      return res.json({ user: sessionUser });
+    }
+
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id,email,name')
+      .eq('id', sessionUser.id)
+      .maybeSingle();
+
+    if (error || !user) {
+      return res.json({ user: null });
+    }
+
+    return res.json({ user: { ...user, admin: false } });
   } catch {
     return res.json({ user: null });
   }
+});
+
+app.post('/api/account/name', auth, async (req, res) => {
+  const name = String(req.body.name || '').trim().replace(/\s+/g, ' ');
+
+  if (name.length < 2 || name.length > 60) {
+    return fail(res, 400, 'Name must be between 2 and 60 characters.');
+  }
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .update({ name })
+    .eq('id', req.user.id)
+    .select('id,email,name')
+    .single();
+
+  if (error || !user) {
+    console.error(error);
+    return fail(res, 500, 'Could not save your name.');
+  }
+
+  setSession(res, {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    admin: false
+  });
+
+  return res.json({ ok: true, user: { ...user, admin: false } });
 });
 
 app.post('/api/admin/login', (req, res) => {
@@ -528,7 +578,7 @@ app.get('/api/stats', async (req, res) => {
 app.get('/api/leaderboard', async (req, res) => {
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('email,total,status')
+    .select('email,total,status,users(name)')
     .in('status', ['PAID', 'DELIVERED']);
 
   if (error) {
@@ -538,19 +588,19 @@ app.get('/api/leaderboard', async (req, res) => {
   const map = new Map();
 
   for (const order of orders || []) {
-    map.set(order.email, (map.get(order.email) || 0) + Number(order.total || 0));
+    const name = String(order.users?.name || '').trim();
+    const key = name || order.email;
+    const existing = map.get(key) || { name: name || 'Customer', spent: 0 };
+    existing.spent += Number(order.total || 0);
+    map.set(key, existing);
   }
 
-  const leaderboard = [...map.entries()]
-    .map(([email, spent]) => ({
-      email,
-      spent
-    }))
+  const leaderboard = [...map.values()]
     .sort((a, b) => b.spent - a.spent)
     .slice(0, 10)
     .map((row, index) => ({
       rank: index + 1,
-      email: row.email,
+      name: row.name,
       spent: row.spent
     }));
 
