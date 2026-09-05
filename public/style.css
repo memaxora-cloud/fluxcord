@@ -619,9 +619,10 @@ button {
   font-weight: 900;
 }
 
-.leader-email {
+.leader-name {
   color: #e8e8ee;
   font-size: 13px;
+  font-weight: 700;
 }
 
 .leader-spent {
@@ -1038,3 +1039,50 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+.product-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.product-buttons .small-button {
+  white-space: nowrap;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.account-profile {
+  margin: 15px 0 24px;
+}
+
+@media (max-width: 640px) {
+  .product-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .product-buttons {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .product-buttons .small-button {
+    flex: 1;
+  }
+}
+
+
+.review-rating-picker{display:flex;gap:6px;margin-top:8px}
+.star-button{border:0;background:transparent;font-size:28px;line-height:1;padding:4px;cursor:pointer;color:#cfc7d8;transition:transform .15s ease,color .15s ease}
+.star-button.active{color:#f4b400}
+.star-button:hover{transform:translateY(-2px)}
