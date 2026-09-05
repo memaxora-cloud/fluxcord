@@ -990,8 +990,21 @@ app.post('/api/reviews', auth, async (req, res) => {
     });
 
   if (error) {
-    console.error(error);
-    return fail(res, 500, 'Could not submit review.');
+    console.error('Review insert failed:', error);
+
+    // Give the frontend a useful message for common Supabase/schema problems
+    // instead of the generic "Could not submit review" message.
+    if (error.code === '23505') {
+      return fail(res, 409, 'You already reviewed this product from this order.');
+    }
+    if (error.code === '42703' || error.code === '42P01') {
+      return fail(res, 500, 'Review database is not updated yet. Run the latest supabase/schema.sql in Supabase SQL Editor, then try again.');
+    }
+    if (error.code === '23503') {
+      return fail(res, 400, 'This product or order is no longer available for review. Please refresh your orders and try again.');
+    }
+
+    return fail(res, 500, error.message || 'Could not submit review.');
   }
 
   return res.json({ ok: true, message: 'Review submitted for admin approval.' });
