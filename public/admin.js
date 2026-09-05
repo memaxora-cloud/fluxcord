@@ -381,6 +381,7 @@ async function orders() {
                       <option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>
                     `).join('')}
                   </select>
+                  ${row.status === 'DELIVERED' ? `<button class="btn secondary" data-resend-email="${row.id}" style="margin-top:6px;width:100%">✉ Resend Delivery Email</button>` : ''}
                 </td>
               </tr>
             `).join('')}
@@ -390,13 +391,34 @@ async function orders() {
     </div>
   `;
 
+  document.querySelectorAll('[data-resend-email]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      button.textContent = 'Sending…';
+      try {
+        await api(`/api/admin/orders/${button.dataset.resendEmail}/resend-email`, { method: 'POST' });
+        alert('Delivery email sent successfully.');
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = '✉ Resend Delivery Email';
+      }
+    });
+  });
+
   document.querySelectorAll('[data-order-status]').forEach((select) => {
     select.addEventListener('change', async () => {
       try {
-        await api(`/api/admin/orders/${select.dataset.orderStatus}`, {
+        const result = await api(`/api/admin/orders/${select.dataset.orderStatus}`, {
           method: 'PATCH',
           body: JSON.stringify({ status: select.value })
         });
+        if (select.value === 'DELIVERED') {
+          alert(result.email_sent === false
+            ? 'Order marked DELIVERED, but the email could not be sent. Check SMTP settings in Vercel.'
+            : 'Order marked DELIVERED and the delivery email was sent.');
+        }
         await orders();
       } catch (error) {
         alert(error.message);
