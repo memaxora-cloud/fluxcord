@@ -8,7 +8,7 @@
   <title>FluxCord — Premium E-books</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -23,18 +23,17 @@
       </a>
 
       <nav class="nav-links" aria-label="Primary navigation">
-        <a href="#products" data-i18n="products">Products</a>
-        <a href="#reviews" data-i18n="reviews">Reviews</a>
+        <a href="#products">Products</a>
+        <a href="#reviews">Reviews</a>
         <a href="#faq">FAQ</a>
       </nav>
 
       <div class="nav-actions">
-        <button class="text-button" id="languageButton">বাংলা</button>
         <button class="cart-button" id="cartButton" aria-label="Open cart">
           <span>Cart</span>
           <b id="cartCount">0</b>
         </button>
-        <button class="outline-button" id="loginButton" data-i18n="login">Login</button>
+        <button class="outline-button" id="loginButton">Login</button>
         <button class="primary-button compact hidden" id="accountButton">Account</button>
       </div>
     </div>
@@ -54,8 +53,8 @@
           <div><strong>Instant email delivery</strong><span>Secure checkouts · Human support · Lifetime access</span></div>
         </div>
         <div class="hero-actions">
-          <a class="primary-button" href="#products" data-i18n="browse">Browse Products →</a>
-          <button class="secondary-button" id="trackButton" data-i18n="track">Track Order</button>
+          <a class="primary-button" href="#products">Browse Products →</a>
+          <button class="secondary-button" id="trackButton">Track Order</button>
         </div>
       </div>
       <div class="hero-visual hero-orb" aria-hidden="true">
@@ -75,7 +74,7 @@
       <div class="section-heading">
         <div>
           <span class="section-label">SHOP</span>
-          <h2 data-i18n="shopTitle">Explore the Shop!</h2>
+          <h2>Explore the Shop!</h2>
           <p>Premium digital resources, ready when you are.</p>
         </div>
         <div class="filters" id="filters"></div>
@@ -87,7 +86,7 @@
     <section class="section container reviews-section" id="reviews">
       <div class="section-intro">
         <span class="section-label">REVIEWS</span>
-        <h2 data-i18n="reviewTitle">What customers say</h2>
+        <h2>What customers say</h2>
         <p>Reviews appear after a quick admin approval to keep the store clean.</p>
       </div>
       <div class="review-grid" id="reviewList"></div>
