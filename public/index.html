@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="FluxCord premium digital e-book store.">
   <meta name="theme-color" content="#08080b">
-  <title>FluxCord — Premium E-books 🔥</title>
+  <title>FluxCord — Premium E-books</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -41,77 +41,42 @@
   </header>
 
   <main id="home">
-    <section class="hero container">
+    <section class="hero container" id="homeHero">
       <div class="hero-copy">
-        <div class="eyebrow-pill">
-          <span class="status-dot"></span>
-          <span data-i18n="pill">Freshly Stocked!</span>
+        <div class="eyebrow-pill hero-eyebrow">
+          <span class="hero-icon-glow">✦</span>
+          <span>START SMALL, EARN BIG</span>
         </div>
-
-        <h1 id="heroTitle">
-          Learn faster.<br>
-          <span>Build smarter.</span>
-        </h1>
-
-        <p id="heroDescription">
-          Premium e-books for students, creators and digital entrepreneurs!
-        </p>
-
-        <div class="hero-actions">
-          <a class="primary-button" href="#products" data-i18n="browse">
-            Browse E-books →
-          </a>
-          <button class="secondary-button" id="trackButton" data-i18n="track">
-            Track Order
-          </button>
-        </div>
-
+        <h1 id="heroTitle"><span class="hero-flux">⚡ FluxCord</span></h1>
+        <p id="heroDescription">Premium e-books for students, creators and digital entrepreneurs.</p>
         <div class="hero-proof">
-          <div class="proof-icon">⚡</div>
-          <div>
-            <strong>Instant email delivery</strong>
-            <span>Secure checkout · Human support</span>
-          </div>
+          <div class="proof-icon flame-proof">🔥</div>
+          <div><strong>Instant email delivery</strong><span>Secure checkouts · Human support · Lifetime access</span></div>
+        </div>
+        <div class="hero-actions">
+          <a class="primary-button" href="#products" data-i18n="browse">Browse Products →</a>
+          <button class="secondary-button" id="trackButton" data-i18n="track">Track Order</button>
         </div>
       </div>
-
-      <div class="hero-visual" aria-hidden="true">
-        <div class="hero-glow"></div>
-        <div class="hero-ring ring-one"></div>
-        <div class="hero-ring ring-two"></div>
-        <img class="hero-logo" src="/logo.png" alt="">
+      <div class="hero-visual hero-orb" aria-hidden="true">
+        <div class="hero-orb-glow"></div>
+        <div class="hero-orb-ring"></div>
+        <img class="hero-logo" src="/logo.png" alt="FluxCord">
       </div>
     </section>
 
     <section class="stats container" aria-label="Store statistics">
-      <div class="stat-card">
-        <span>Customers</span>
-        <strong id="statCustomers">0</strong>
-        <small>+ trusted shoppers</small>
-      </div>
-      <div class="stat-card">
-        <span>Products Sold</span>
-        <strong id="statSold">0</strong>
-        <small>digital deliveries</small>
-      </div>
-      <div class="stat-card">
-        <span>Rating</span>
-        <strong>★ <span id="statRating">0.0</span></strong>
-        <small>approved customer reviews</small>
-      </div>
-      <div class="stat-card">
-        <span>Delivery</span>
-        <strong>EMAIL</strong>
-        <small>after payment verification</small>
-      </div>
+      <div class="stat-card"><span>Customers</span><strong id="statCustomers">0</strong><small>trusted shoppers</small></div>
+      <div class="stat-card"><span>Products Sold</span><strong id="statSold">0</strong><small>digital deliveries</small></div>
+      <div class="stat-card"><span>Ratings</span><strong>★ <span id="statRating">0.0</span></strong><small>approved reviews</small></div>
     </section>
 
     <section class="section container" id="products">
       <div class="section-heading">
         <div>
-          <span class="section-label">STORE</span>
-          <h2 data-i18n="shopTitle">Explore the collection</h2>
-          <p>Find the guide that matches your next goal.</p>
+          <span class="section-label">SHOP</span>
+          <h2 data-i18n="shopTitle">Explore the Shop!</h2>
+          <p>Premium digital resources, ready when you are.</p>
         </div>
         <div class="filters" id="filters"></div>
       </div>
@@ -119,7 +84,7 @@
       <div class="product-grid" id="productGrid"></div>
     </section>
 
-    <section class="section container split-section" id="reviews">
+    <section class="section container reviews-section" id="reviews">
       <div class="section-intro">
         <span class="section-label">REVIEWS</span>
         <h2 data-i18n="reviewTitle">What customers say</h2>
@@ -149,8 +114,8 @@
           <p>You will receive your product in your email after your payment is verified and the order is delivered.</p>
         </details>
         <details>
-          <summary>What if I put the wrong email?</summary>
-          <p>No worries. Contact us through Email, Discord, or Facebook, and we can help you with manual delivery.</p>
+          <summary>What if I put a wrong email?</summary>
+          <p>No worries. Contact us through Email, Discord or Facebook and we can help you with manual delivery.</p>
         </details>
         <details>
           <summary>Are these worth buying?</summary>
@@ -160,6 +125,8 @@
     </section>
   </main>
 
+  <section id="checkoutPortal" class="checkout-portal hidden"></section>
+
   <footer class="footer">
     <div class="container footer-inner">
       <div>
@@ -167,9 +134,9 @@
         <p>Premium digital knowledge.</p>
       </div>
       <div class="footer-links">
-        <a id="discordLink" href="#">Discord</a>
-        <a id="facebookLink" href="#">Facebook</a>
-        <a id="emailLink" href="#">Email</a>
+        <a id="discordLink" href="#" aria-label="Discord">◉ Discord</a>
+        <a id="facebookLink" href="#" aria-label="Facebook">◉ Facebook</a>
+        <a id="emailLink" href="#" aria-label="Email">✉ Email</a>
       </div>
       <span>© 2026 FluxCord</span>
     </div>
