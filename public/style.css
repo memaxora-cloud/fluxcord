@@ -1,3 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+@font-face {
+  font-family: 'CS Howard Gothic';
+  src: url('CSHowardGothic.woff2') format('woff2'),
+       url('CSHowardGothic.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #07070a;
   --panel: rgba(16, 16, 22, 0.78);
@@ -28,7 +39,7 @@ body {
     radial-gradient(circle at 78% 15%, rgba(118, 41, 255, 0.09), transparent 28%),
     radial-gradient(circle at 20% 40%, rgba(43, 90, 255, 0.05), transparent 24%),
     var(--bg);
-  font-family: Inter, "Noto Sans Bengali", system-ui, sans-serif;
+  font-family: "Poppins", "CS Howard Gothic", "Noto Sans Bengali", system-ui, sans-serif;
   overflow-x: hidden;
 }
 
@@ -253,6 +264,7 @@ button {
   font-size: clamp(50px, 7vw, 86px);
   line-height: 0.97;
   letter-spacing: -0.065em;
+  font-family: "CS Howard Gothic", "Poppins", sans-serif;
 }
 
 .hero h1 span {
@@ -421,6 +433,7 @@ button {
   margin: 8px 0 8px;
   font-size: clamp(30px, 4vw, 46px);
   letter-spacing: -0.055em;
+  font-family: "CS Howard Gothic", "Poppins", sans-serif;
 }
 
 .section-heading p,
@@ -519,6 +532,7 @@ button {
   margin: 13px 0 7px;
   font-size: 20px;
   letter-spacing: -0.035em;
+  font-family: "CS Howard Gothic", "Poppins", sans-serif;
 }
 
 .product-body p {
@@ -733,6 +747,7 @@ button {
   margin: 0 0 7px;
   font-size: 28px;
   letter-spacing: -0.04em;
+  font-family: "CS Howard Gothic", "Poppins", sans-serif;
 }
 
 .muted {
@@ -826,7 +841,7 @@ button {
 .remove-button {
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: 99px;
   color: #ff8da8;
   background: rgba(255, 61, 113, 0.08);
 }
@@ -1040,7 +1055,6 @@ button {
   }
 }
 
-
 .product-buttons {
   display: flex;
   gap: 8px;
@@ -1081,11 +1095,10 @@ button {
   }
 }
 
-
-.review-rating-picker{display:flex;gap:6px;margin-top:8px}
-.star-button{border:0;background:transparent;font-size:28px;line-height:1;padding:4px;cursor:pointer;color:#cfc7d8;transition:transform .15s ease,color .15s ease}
-.star-button.active{color:#f4b400}
-.star-button:hover{transform:translateY(-2px)}
+.review-rating-picker { display: flex; gap: 6px; margin-top: 8px; }
+.star-button { border: 0; background: transparent; font-size: 28px; line-height: 1; padding: 4px; cursor: pointer; color: #cfc7d8; transition: transform .15s ease, color .15s ease; }
+.star-button.active { color: #f4b400; }
+.star-button:hover { transform: translateY(-2px); }
 
 /* FluxCord polish: animated category icons, review marquee and support alerts */
 .filter-button {
@@ -1247,7 +1260,6 @@ button {
     animation: none !important;
   }
 }
-
 
 .ticket-live-panel {
   display: flex;
