@@ -945,13 +945,46 @@ app.post('/api/reviews', auth, async (req, res) => {
     return fail(res, 400, 'Please write a review.');
   }
 
-  const { data: order } = await supabase
+  // First try the current random order_code. If an older order still has a
+  // numeric code such as #001, also support resolving it by the numeric ID.
+  let order = null;
+  let orderLookupError = null;
+
+  const byCode = await supabase
     .from('orders')
     .select('id,status,user_id,email,order_code')
     .eq('order_code', orderCodeValue)
     .maybeSingle();
 
-  if (!order || order.user_id !== req.user.id || order.status !== 'DELIVERED') {
+  order = byCode.data || null;
+  orderLookupError = byCode.error || null;
+
+  if (!order && !orderLookupError) {
+    const legacyId = orderCodeValue.match(/^#?(\d+)$/);
+    if (legacyId) {
+      const byId = await supabase
+        .from('orders')
+        .select('id,status,user_id,email,order_code')
+        .eq('id', Number(legacyId[1]))
+        .maybeSingle();
+      order = byId.data || null;
+      orderLookupError = byId.error || null;
+    }
+  }
+
+  if (orderLookupError) {
+    console.error('Review order lookup failed:', orderLookupError);
+    if (orderLookupError.code === '42P01' || /schema cache|could not find.*orders/i.test(orderLookupError.message || '')) {
+      return fail(res, 500, 'Supabase cannot find the orders table in the public schema cache. Check Supabase → Table Editor and run the latest schema, then reload the API.');
+    }
+    return fail(res, 500, orderLookupError.message || 'Could not find order.');
+  }
+
+  if (!order) {
+    return fail(res, 404, 'Could not find this order. Please refresh My Orders and open the review again.');
+  }
+
+  if (order.user_id !== req.user.id || order.status !== 'DELIVERED') {
     return fail(res, 403, 'Only delivered orders can be reviewed.');
   }
 
