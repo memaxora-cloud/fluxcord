@@ -10,6 +10,10 @@
   --danger: #ff3d71;
   --shadow: 0 25px 80px rgba(0, 0, 0, 0.42);
   --radius: 24px;
+  
+  /* Bold, Cool, Swift Typography Variables */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', "Noto Sans Bengali", system-ui, sans-serif;
 }
 
 * {
@@ -28,8 +32,10 @@ body {
     radial-gradient(circle at 78% 15%, rgba(118, 41, 255, 0.09), transparent 28%),
     radial-gradient(circle at 20% 40%, rgba(43, 90, 255, 0.05), transparent 24%),
     var(--bg);
-  font-family: Inter, "Noto Sans Bengali", system-ui, sans-serif;
+  font-family: var(--font-body);
+  font-weight: 700;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 body,
@@ -107,9 +113,12 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-size: 20px;
 }
 
 .brand img {
@@ -130,7 +139,9 @@ button {
 .text-button {
   color: var(--muted);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   transition: color 0.2s ease;
 }
 
@@ -155,18 +166,22 @@ button {
 .secondary-button,
 .primary-button {
   min-height: 42px;
-  padding: 0 16px;
+  padding: 0 18px;
   border-radius: 12px;
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 800;
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s ease, background 0.2s ease;
 }
 
 .cart-button:hover,
 .outline-button:hover,
 .secondary-button:hover,
 .primary-button:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) skewX(-2deg);
 }
 
 .cart-button {
@@ -187,6 +202,7 @@ button {
   color: #fff;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   font-size: 11px;
+  font-style: normal;
 }
 
 .outline-button,
@@ -228,15 +244,16 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: 999px;
   color: #c6c6cf;
   background: rgba(255, 255, 255, 0.035);
+  font-family: var(--font-display);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
 }
 
 .status-dot {
@@ -250,9 +267,13 @@ button {
 .hero h1 {
   max-width: 720px;
   margin: 22px 0 18px;
-  font-size: clamp(50px, 7vw, 86px);
-  line-height: 0.97;
-  letter-spacing: -0.065em;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(52px, 7.5vw, 90px);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  font-style: italic;
 }
 
 .hero h1 span {
@@ -267,7 +288,8 @@ button {
   margin: 0;
   color: var(--muted);
   font-size: 17px;
-  line-height: 1.75;
+  font-weight: 700;
+  line-height: 1.65;
 }
 
 .hero-actions {
@@ -291,8 +313,10 @@ button {
   border: 1px solid var(--border);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.045);
-  font-size: 11px;
+  font-family: var(--font-display);
+  font-size: 12px;
   font-weight: 900;
+  font-style: italic;
 }
 
 .hero-proof strong,
@@ -301,7 +325,9 @@ button {
 }
 
 .hero-proof strong {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .hero-proof span {
@@ -378,16 +404,20 @@ button {
 
 .stat-card > span {
   display: block;
+  font-family: var(--font-display);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.12em;
 }
 
 .stat-card strong {
   display: block;
-  margin-top: 10px;
-  font-size: 28px;
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  font-style: italic;
   letter-spacing: -0.04em;
 }
 
@@ -412,15 +442,21 @@ button {
 .section-label {
   display: block;
   color: #8f6cff;
-  font-size: 10px;
+  font-family: var(--font-display);
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .section h2 {
   margin: 8px 0 8px;
-  font-size: clamp(30px, 4vw, 46px);
-  letter-spacing: -0.055em;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: clamp(32px, 4.5vw, 48px);
+  letter-spacing: -0.04em;
 }
 
 .section-heading p,
@@ -428,7 +464,7 @@ button {
 .faq-section > p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
 .filters {
@@ -439,14 +475,18 @@ button {
 }
 
 .filter-button {
-  padding: 9px 12px;
+  padding: 9px 14px;
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--muted);
   background: transparent;
-  font-size: 10px;
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  font-style: italic;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
 }
 
 .filter-button.active,
@@ -454,6 +494,7 @@ button {
   color: #fff;
   border-color: rgba(151, 92, 255, 0.55);
   background: rgba(130, 55, 255, 0.12);
+  transform: skewX(-4deg);
 }
 
 .product-grid {
@@ -468,7 +509,7 @@ button {
   border-radius: var(--radius);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018));
   box-shadow: 0 16px 60px rgba(0, 0, 0, 0.16);
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s ease;
 }
 
 .product-card:hover {
@@ -505,20 +546,24 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   color: #d2c8ff;
   background: rgba(141, 53, 255, 0.09);
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .product-body h3 {
   margin: 13px 0 7px;
-  font-size: 20px;
-  letter-spacing: -0.035em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.03em;
 }
 
 .product-body p {
@@ -526,7 +571,7 @@ button {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .product-meta {
@@ -536,6 +581,8 @@ button {
   margin-top: 14px;
   color: #b8b8c2;
   font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .product-bottom {
@@ -547,9 +594,11 @@ button {
 }
 
 .product-price {
-  font-size: 22px;
+  font-family: var(--font-display);
+  font-size: 24px;
   font-weight: 900;
-  letter-spacing: -0.04em;
+  font-style: italic;
+  letter-spacing: -0.03em;
 }
 
 .small-button {
@@ -587,12 +636,14 @@ button {
 .review-card p {
   color: #d1d1d8;
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 .review-author {
   color: var(--muted);
   font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .leaderboard {
@@ -616,17 +667,21 @@ button {
 
 .leader-rank {
   color: #9f7bff;
+  font-family: var(--font-display);
   font-weight: 900;
+  font-style: italic;
 }
 
 .leader-name {
   color: #e8e8ee;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .leader-spent {
+  font-family: var(--font-display);
   font-weight: 900;
+  font-style: italic;
 }
 
 .faq-section {
@@ -645,14 +700,15 @@ button {
 
 .faq-list summary {
   cursor: pointer;
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 16px;
   font-weight: 800;
 }
 
 .faq-list p {
   margin: 13px 0 0;
   color: var(--muted);
-  line-height: 1.75;
+  line-height: 1.7;
 }
 
 .footer {
@@ -671,8 +727,11 @@ button {
 
 .footer-brand {
   color: #fff;
-  font-size: 15px;
+  font-family: var(--font-display);
+  font-size: 16px;
   font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
 }
 
 .footer p {
@@ -682,6 +741,8 @@ button {
 .footer-links {
   display: flex;
   gap: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .footer-links a:hover {
@@ -731,6 +792,10 @@ button {
 
 .modal-card h2 {
   margin: 0 0 7px;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
   font-size: 28px;
   letter-spacing: -0.04em;
 }
@@ -750,6 +815,8 @@ button {
   color: #bdbdc7;
   font-size: 11px;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .form input,
@@ -764,6 +831,7 @@ button {
   outline: none;
   color: #fff;
   background: #0a0a0e;
+  font-weight: 700;
 }
 
 .form textarea {
@@ -802,6 +870,8 @@ button {
 .payment-line span {
   color: var(--muted);
   font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .payment-line code {
@@ -894,6 +964,7 @@ button {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
+  font-weight: 800;
 }
 
 .toast.show {
@@ -1040,7 +1111,6 @@ button {
   }
 }
 
-
 .product-buttons {
   display: flex;
   gap: 8px;
@@ -1081,8 +1151,7 @@ button {
   }
 }
 
-
-.review-rating-picker{display:flex;gap:6px;margin-top:8px}
-.star-button{border:0;background:transparent;font-size:28px;line-height:1;padding:4px;cursor:pointer;color:#cfc7d8;transition:transform .15s ease,color .15s ease}
-.star-button.active{color:#f4b400}
-.star-button:hover{transform:translateY(-2px)}
+.review-rating-picker { display: flex; gap: 6px; margin-top: 8px; }
+.star-button { border: 0; background: transparent; font-size: 28px; line-height: 1; padding: 4px; cursor: pointer; color: #cfc7d8; transition: transform .15s ease, color .15s ease; }
+.star-button.active { color: #f4b400; }
+.star-button:hover { transform: translateY(-2px); }
