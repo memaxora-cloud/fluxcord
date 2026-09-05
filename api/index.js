@@ -181,63 +181,105 @@ function orderCode(id) {
   return `#${String(id).padStart(3, '0')}`;
 }
 
+function siteUrl() {
+  return String(process.env.SITE_URL || 'https://fluxcord.store').replace(/\/$/, '');
+}
+
+function reviewUrl(orderCodeValue) {
+  return `${siteUrl()}/?review=${encodeURIComponent(orderCodeValue)}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[character]));
+}
+
 async function sendDeliveryEmail(orderId) {
   const { data: order } = await supabase
     .from('orders')
-    .select('id,order_code,email,total,status')
+    .select('id,order_code,email,total,status,created_at')
     .eq('id', orderId)
     .maybeSingle();
 
-  if (!order) {
+  if (!order || order.status !== 'DELIVERED') {
     return;
   }
 
   const { data: items } = await supabase
     .from('order_items')
-    .select('name,quantity,product_id')
+    .select('name,quantity,product_id,price')
     .eq('order_id', orderId);
 
-  const productIds = (items || [])
-    .map((item) => item.product_id)
-    .filter(Boolean);
-
+  const productIds = (items || []).map((item) => item.product_id).filter(Boolean);
   const { data: products } = await supabase
     .from('products')
     .select('id,name,file_url')
     .in('id', productIds.length ? productIds : [0]);
 
-  const links = (items || []).map((item) => {
+  const productRows = (items || []).map((item) => {
     const product = (products || []).find((p) => p.id === item.product_id);
-
-    if (!product?.file_url) {
-      return `${item.name} — delivery is being handled manually by the FluxCord team.`;
-    }
-
-    return `${item.name} — ${product.file_url}`;
+    return {
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+      fileUrl: product?.file_url || ''
+    };
   });
 
+  const review = reviewUrl(order.order_code);
+  const productText = productRows.map((item) =>
+    `${item.name} × ${item.quantity}${item.fileUrl ? ` — ${item.fileUrl}` : ' — delivery is being handled manually by the FluxCord team.'}`
+  );
+
   const text = [
-    `Thank you for your FluxCord order ${order.order_code}.`,
+    `Thank you for shopping with FluxCord!`,
+    `Order: ${order.order_code}`,
+    `Total: ৳${Number(order.total || 0).toLocaleString('en-BD')}`,
     '',
-    'Your order has been marked as delivered.',
+    'Your payment has been verified and your order is now delivered.',
     '',
-    ...links,
+    'Download your products:',
+    ...productText,
     '',
-    'If you have any problem, reply to this email or contact FluxCord support.'
+    `Leave a review: ${review}`,
+    '',
+    'Need help? Contact FluxCord support.'
   ].join('\n');
 
   await sendMail({
     to: order.email,
-    subject: `FluxCord delivery — ${order.order_code}`,
+    subject: `🎉 Your FluxCord order ${order.order_code} is ready!`,
     text,
     html: `
-      <div style="font-family:Arial,sans-serif;line-height:1.6">
-        <h2>FluxCord — Your order is ready</h2>
-        <p>Order <strong>${order.order_code}</strong> has been marked as delivered.</p>
-        <ul>
-          ${links.map((link) => `<li>${link}</li>`).join('')}
-        </ul>
-        <p>If you need help, contact FluxCord support.</p>
+      <div style="margin:0;background:#f5f3ff;padding:32px 16px;font-family:Inter,Arial,sans-serif;color:#17121f">
+        <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e9e2f5;border-radius:24px;overflow:hidden;box-shadow:0 14px 40px rgba(65,35,100,.10)">
+          <div style="padding:34px 32px;background:linear-gradient(135deg,#6d28d9,#9333ea);color:#fff">
+            <div style="font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.85">FLUXCORD</div>
+            <h1 style="margin:10px 0 6px;font-size:30px;line-height:1.15">Your order is ready 🎉</h1>
+            <p style="margin:0;opacity:.9">Thanks for shopping with FluxCord.</p>
+          </div>
+          <div style="padding:32px">
+            <div style="background:#faf8ff;border:1px solid #eee7f8;border-radius:16px;padding:18px 20px;margin-bottom:24px">
+              <div style="font-size:12px;color:#7a7085;text-transform:uppercase;letter-spacing:1px">Order</div>
+              <div style="font-size:20px;font-weight:800;margin-top:4px">${escapeHtml(order.order_code)}</div>
+              <div style="margin-top:8px;color:#62586d">Total: <strong style="color:#17121f">৳${Number(order.total || 0).toLocaleString('en-BD')}</strong></div>
+            </div>
+            <p style="font-size:16px;line-height:1.6">Your payment has been verified and your order is now <strong>DELIVERED</strong>.</p>
+            <h2 style="font-size:18px;margin:26px 0 12px">Your downloads</h2>
+            ${productRows.map((item) => item.fileUrl
+              ? `<div style="border:1px solid #eee7f8;border-radius:14px;padding:16px;margin:10px 0"><div style="font-weight:800">${escapeHtml(item.name)}</div><div style="color:#746a80;margin:5px 0 12px">Quantity: ${item.quantity}</div><a href="${escapeHtml(item.fileUrl)}" style="display:inline-block;padding:11px 16px;border-radius:10px;background:#6d28d9;color:#fff;text-decoration:none;font-weight:800">Download product →</a></div>`
+              : `<div style="border:1px solid #eee7f8;border-radius:14px;padding:16px;margin:10px 0"><div style="font-weight:800">${escapeHtml(item.name)}</div><div style="color:#746a80;margin-top:5px">Manual delivery by the FluxCord team.</div></div>`
+            ).join('')}
+            <div style="margin-top:30px;padding:22px;border-radius:18px;background:#f7f2ff;text-align:center">
+              <h2 style="margin:0 0 8px;font-size:20px">Enjoyed your purchase?</h2>
+              <p style="margin:0 0 16px;color:#665b70">Tell us what you think. Your review helps other customers.</p>
+              <a href="${escapeHtml(review)}" style="display:inline-block;padding:13px 22px;border-radius:12px;background:#17121f;color:#fff;text-decoration:none;font-weight:800">⭐ Leave a Review</a>
+            </div>
+            <p style="margin:28px 0 0;color:#7a7085;font-size:13px;line-height:1.6">If you need help with your order, reply to this email or contact FluxCord support.</p>
+          </div>
+          <div style="padding:18px 32px;background:#faf9fc;color:#8a8091;font-size:12px;text-align:center">FluxCord · Premium digital products</div>
+        </div>
       </div>
     `
   });
@@ -311,7 +353,7 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/reviews', async (req, res) => {
   const { data, error } = await supabase
     .from('reviews')
-    .select('id,email,stars,comment,created_at,products(name)')
+    .select('id,email,stars,comment,created_at,users(name),products(name)')
     .eq('approved', true)
     .order('id', { ascending: false })
     .limit(30);
@@ -324,7 +366,8 @@ app.get('/api/reviews', async (req, res) => {
   return res.json(
     (data || []).map((review) => ({
       ...review,
-      product_name: review.products?.name || 'Product'
+      product_name: review.products?.name || 'Product',
+      name: review.users?.name || 'Customer'
     }))
   );
 });
@@ -845,23 +888,56 @@ app.get('/api/orders/:code', async (req, res) => {
 });
 
 app.post('/api/reviews', auth, async (req, res) => {
+  const orderCodeValue = String(req.body.order_code || '').trim().toUpperCase();
   const productId = Number(req.body.product_id);
   const stars = Math.max(1, Math.min(5, Number(req.body.stars || 5)));
   const comment = String(req.body.comment || '').trim().slice(0, 500);
 
-  const { data: product } = await supabase
-    .from('products')
-    .select('id')
-    .eq('id', productId)
+  if (!orderCodeValue || !Number.isInteger(productId) || productId <= 0) {
+    return fail(res, 400, 'Order and product are required.');
+  }
+
+  if (!comment) {
+    return fail(res, 400, 'Please write a review.');
+  }
+
+  const { data: order } = await supabase
+    .from('orders')
+    .select('id,status,user_id,email,order_code')
+    .eq('order_code', orderCodeValue)
     .maybeSingle();
 
-  if (!product) {
-    return fail(res, 404, 'Product not found.');
+  if (!order || order.user_id !== req.user.id || order.status !== 'DELIVERED') {
+    return fail(res, 403, 'Only delivered orders can be reviewed.');
+  }
+
+  const { data: item } = await supabase
+    .from('order_items')
+    .select('id,product_id')
+    .eq('order_id', order.id)
+    .eq('product_id', productId)
+    .maybeSingle();
+
+  if (!item) {
+    return fail(res, 400, 'That product is not part of this order.');
+  }
+
+  const { data: existing } = await supabase
+    .from('reviews')
+    .select('id')
+    .eq('order_id', order.id)
+    .eq('product_id', productId)
+    .maybeSingle();
+
+  if (existing) {
+    return fail(res, 409, 'You already reviewed this product from this order.');
   }
 
   const { error } = await supabase
     .from('reviews')
     .insert({
+      order_id: order.id,
+      user_id: req.user.id,
       product_id: productId,
       email: req.user.email,
       stars,
@@ -870,13 +946,11 @@ app.post('/api/reviews', auth, async (req, res) => {
     });
 
   if (error) {
+    console.error(error);
     return fail(res, 500, 'Could not submit review.');
   }
 
-  return res.json({
-    ok: true,
-    message: 'Review submitted for admin approval.'
-  });
+  return res.json({ ok: true, message: 'Review submitted for admin approval.' });
 });
 
 app.get('/api/tickets/:id/messages', auth, async (req, res) => {
@@ -1198,7 +1272,7 @@ app.delete('/api/admin/coupons/:id', auth, adminOnly, async (req, res) => {
 app.get('/api/admin/reviews', auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase
     .from('reviews')
-    .select('id,email,stars,comment,approved,created_at,products(name)')
+    .select('id,email,stars,comment,approved,created_at,user_id,order_id,users(name),products(name)')
     .order('id', { ascending: false });
 
   if (error) {
@@ -1208,18 +1282,43 @@ app.get('/api/admin/reviews', auth, adminOnly, async (req, res) => {
   return res.json(
     (data || []).map((review) => ({
       ...review,
-      product_name: review.products?.name || 'Product'
+      product_name: review.products?.name || 'Product',
+      name: review.users?.name || 'Customer'
     }))
   );
 });
 
 app.patch('/api/admin/reviews/:id', auth, adminOnly, async (req, res) => {
   const id = Number(req.params.id);
-  const approved = Boolean(req.body.approved);
+  const updates = {};
+
+  if (typeof req.body.approved !== 'undefined') {
+    updates.approved = Boolean(req.body.approved);
+  }
+
+  if (typeof req.body.stars !== 'undefined') {
+    const stars = Number(req.body.stars);
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+      return fail(res, 400, 'Stars must be between 1 and 5.');
+    }
+    updates.stars = stars;
+  }
+
+  if (typeof req.body.comment !== 'undefined') {
+    const comment = String(req.body.comment || '').trim().slice(0, 500);
+    if (!comment) {
+      return fail(res, 400, 'Review text cannot be empty.');
+    }
+    updates.comment = comment;
+  }
+
+  if (!Object.keys(updates).length) {
+    return fail(res, 400, 'No review changes supplied.');
+  }
 
   const { error } = await supabase
     .from('reviews')
-    .update({ approved })
+    .update(updates)
     .eq('id', id);
 
   if (error) {
