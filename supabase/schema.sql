@@ -127,3 +127,9 @@ where not exists (select 1 from public.products);
 
 -- The application uses the service-role key on the server.
 -- Do not expose SUPABASE_SERVICE_ROLE_KEY in frontend code.
+
+
+-- Upgrade existing numeric order IDs to the new human-friendly unique format.
+update public.orders
+set order_code = '#' || upper(substr(md5(random()::text || id::text || clock_timestamp()::text), 1, 8))
+where order_code is null or order_code ~ '^#[0-9]+$';
