@@ -49,7 +49,6 @@ function money(value) {
 
 function toast(message) {
   const element = $('#toast');
-  if (!element) return;
   element.textContent = message;
   element.classList.add('show');
 
@@ -74,10 +73,7 @@ function closeModal() {
 
 function saveCart() {
   localStorage.setItem('fluxcord_cart', JSON.stringify(state.cart));
-  const cartCountEl = $('#cartCount');
-  if (cartCountEl) {
-    cartCountEl.textContent = state.cart.reduce((sum, item) => sum + item.qty, 0);
-  }
+  $('#cartCount').textContent = state.cart.reduce((sum, item) => sum + item.qty, 0);
 }
 
 async function api(url, options = {}) {
@@ -114,10 +110,7 @@ function applyLanguage() {
     }
   });
 
-  const langBtn = $('#languageButton');
-  if (langBtn) {
-    langBtn.textContent = state.language === 'bn' ? 'English' : 'বাংলা';
-  }
+  $('#languageButton').textContent = state.language === 'bn' ? 'English' : 'বাংলা';
   document.documentElement.lang = state.language === 'bn' ? 'bn' : 'en';
   localStorage.setItem('fluxcord_language', state.language);
 }
@@ -126,46 +119,35 @@ function renderHero() {
   const title = state.settings.hero_title || 'Learn faster.\nBuild smarter.';
   const titleLines = title.split('\n');
 
-  const heroTitleEl = $('#heroTitle');
-  if (heroTitleEl) {
-    heroTitleEl.innerHTML = titleLines
-      .map((line, index) => index === titleLines.length - 1
-        ? `<span>${escapeHtml(line)}</span>`
-        : escapeHtml(line))
-      .join('<br>');
-  }
+  $('#heroTitle').innerHTML = titleLines
+    .map((line, index) => index === titleLines.length - 1
+      ? `<span>${escapeHtml(line)}</span>`
+      : escapeHtml(line))
+    .join('<br>');
 
-  const heroDescEl = $('#heroDescription');
-  if (heroDescEl) heroDescEl.textContent = state.settings.hero_description || '';
+  $('#heroDescription').textContent = state.settings.hero_description || '';
 
-  const discordBtn = $('#discordLink');
-  if (discordBtn) discordBtn.href = state.settings.discord || '#';
-
-  const fbBtn = $('#facebookLink');
-  if (fbBtn) fbBtn.href = state.settings.facebook || '#';
-
-  const mailBtn = $('#emailLink');
-  if (mailBtn) mailBtn.href = `mailto:${state.settings.email || 'support@fluxcord.store'}`;
+  $('#discordLink').href = state.settings.discord || '#';
+  $('#facebookLink').href = state.settings.facebook || '#';
+  $('#emailLink').href = `mailto:${state.settings.email || 'support@fluxcord.store'}`;
 }
 
 function renderFilters() {
   const filters = [
-    { value: 'ALL', label: '✦ ALL' },
-    { value: 'FRESH', label: '✦ FRESH' },
-    { value: 'HOT', label: '🔥 HOT' },
-    { value: 'SPECIAL', label: '★ SPECIAL' }
+    { value: 'ALL', icon: '✦', label: 'ALL', className: 'filter-all' },
+    { value: 'FRESH', icon: '✦', label: 'FRESH', className: 'filter-fresh' },
+    { value: 'HOT', icon: '🔥', label: 'HOT', className: 'filter-hot' },
+    { value: 'SPECIAL', icon: '★', label: 'SPECIAL', className: 'filter-special' }
   ];
 
-  const filtersEl = $('#filters');
-  if (!filtersEl) return;
-
-  filtersEl.innerHTML = filters
+  $('#filters').innerHTML = filters
     .map((filter) => `
       <button
-        class="filter-button ${state.filter === filter.value ? 'active' : ''}"
+        class="filter-button ${filter.className} ${state.filter === filter.value ? 'active' : ''}"
         data-filter="${filter.value}"
       >
-        ${filter.label}
+        <span class="filter-icon" aria-hidden="true">${filter.icon}</span>
+        <span>${filter.label}</span>
       </button>
     `)
     .join('');
@@ -180,15 +162,12 @@ function renderFilters() {
 }
 
 function renderProducts() {
-  const productGrid = $('#productGrid');
-  if (!productGrid) return;
-
   const products = state.products.filter((product) => (
     state.filter === 'ALL' || product.tag === state.filter
   ));
 
   if (!products.length) {
-    productGrid.innerHTML = `
+    $('#productGrid').innerHTML = `
       <div class="empty-state">
         No products are available in this category yet.
       </div>
@@ -196,7 +175,7 @@ function renderProducts() {
     return;
   }
 
-  productGrid.innerHTML = products.map((product) => `
+  $('#productGrid').innerHTML = products.map((product) => `
     <article class="product-card">
       <div class="product-image">
         ${product.image
@@ -204,8 +183,8 @@ function renderProducts() {
           : '<div class="product-fallback">📘</div>'}
       </div>
       <div class="product-body">
-        <span class="product-tag">
-          ${product.tag === 'HOT' ? '🔥' : product.tag === 'SPECIAL' ? '★' : '✦'}
+        <span class="product-tag tag-${String(product.tag || 'FRESH').toLowerCase()}">
+          <span class="tag-icon" aria-hidden="true">${product.tag === 'HOT' ? '🔥' : product.tag === 'SPECIAL' ? '★' : '✦'}</span>
           ${escapeHtml(product.tag)}
         </span>
         <h3>${escapeHtml(product.name)}</h3>
@@ -396,6 +375,8 @@ function openOtpVerify(email, demoOtp) {
       } else {
         toast('Logged in successfully.');
       }
+
+      await openReviewFromUrl();
     } catch (error) {
       toast(error.message);
     }
@@ -442,27 +423,24 @@ async function requiredNameModal() {
 }
 
 async function refreshUser() {
-  try {
-    const result = await api('/api/me');
-    state.currentUser = result.user;
-  } catch {
-    state.currentUser = null;
-  }
-
-  const loginBtn = $('#loginButton');
-  const accountBtn = $('#accountButton');
+  const result = await api('/api/me');
+  state.currentUser = result.user;
 
   if (state.currentUser) {
-    if (loginBtn) loginBtn.classList.add('hidden');
-    if (accountBtn) accountBtn.classList.remove('hidden');
+    $('#loginButton').classList.add('hidden');
+    $('#accountButton').classList.remove('hidden');
   } else {
-    if (loginBtn) loginBtn.classList.remove('hidden');
-    if (accountBtn) accountBtn.classList.add('hidden');
+    $('#loginButton').classList.remove('hidden');
+    $('#accountButton').classList.add('hidden');
   }
 }
 
 async function checkout() {
-  await refreshUser();
+  try {
+    await refreshUser();
+  } catch {
+    state.currentUser = null;
+  }
 
   if (!state.currentUser) {
     closeModal();
@@ -636,6 +614,15 @@ async function accountModal() {
       </div>
       <h3>My Orders</h3>
       <p class="muted">Track your orders and open support tickets.</p>
+      ${orders.some((order) => ticketForOrder(order)?.status === 'OPEN') ? `
+        <div class="ticket-live-panel">
+          <div class="ticket-live-icon">✦</div>
+          <div>
+            <strong>Support ticket is open</strong>
+            <span>FluxCord support is ready. Open your order to continue the chat.</span>
+          </div>
+        </div>
+      ` : ''}
       <div>
         ${orders.length
           ? orders.map((order) => `
@@ -648,6 +635,11 @@ async function accountModal() {
               <button class="secondary-button small-button" data-view-order="${order.id}">
                 View
               </button>
+              ${ticketForOrder(order)?.status === 'OPEN' ? `
+                <button class="ticket-alert-box" data-view-order="${order.id}">
+                  <span class="ticket-glow-dot"></span> Support ticket open — View chat →
+                </button>
+              ` : ''}
               ${order.status === 'DELIVERED' ? (order.order_items || []).map((item) => `
                 <button class="secondary-button small-button" data-review-order="${order.id}" data-review-product="${item.product_id}">
                   ⭐ Review
@@ -696,6 +688,10 @@ async function accountModal() {
 
 function orderCodeFallback(id) {
   return `#${String(id).padStart(3, '0')}`;
+}
+
+function ticketForOrder(order) {
+  return Array.isArray(order?.tickets) ? order.tickets.find((ticket) => ticket.status === 'OPEN') || order.tickets[0] : null;
 }
 
 function reviewModal(order, item) {
@@ -824,9 +820,9 @@ async function loadTicketMessages(ticketId, selector) {
 async function trackOrderModal(prefilledCode = '') {
   openModal(`
     <h2>Track an Order</h2>
-    <p class="muted">Enter an order ID such as #001.</p>
+    <p class="muted">Enter an order ID such as #90IW1212.</p>
     <form class="form" id="trackForm">
-      <input id="trackCode" placeholder="#001" value="${escapeHtml(prefilledCode)}" required>
+      <input id="trackCode" placeholder="#90IW1212" value="${escapeHtml(prefilledCode)}" required>
       <button class="primary-button" type="submit">Track Order</button>
     </form>
     <div id="trackResult"></div>
@@ -857,79 +853,99 @@ async function trackOrderModal(prefilledCode = '') {
   });
 }
 
+function animateNumber(element, target, duration = 1000, decimals = 0) {
+  const end = Number(target || 0);
+  const startTime = performance.now();
+
+  const tick = (now) => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = end * eased;
+    element.textContent = decimals ? value.toFixed(decimals) : Math.round(value).toLocaleString('en-BD');
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+
+  element.textContent = decimals ? '0.0' : '0';
+  requestAnimationFrame(tick);
+}
+
 async function renderStats() {
-  try {
-    const stats = await api('/api/stats');
-    if ($('#statCustomers')) $('#statCustomers').textContent = Number(stats.customers || 0).toLocaleString('en-BD');
-    if ($('#statSold')) $('#statSold').textContent = Number(stats.sold || 0).toLocaleString('en-BD');
-    if ($('#statRating')) $('#statRating').textContent = Number(stats.rating || 0).toFixed(1);
-  } catch (err) {
-    console.warn("Could not load stats:", err);
-  }
+  const stats = await api('/api/stats');
+  animateNumber($('#statCustomers'), stats.customers, 1000, 0);
+  animateNumber($('#statSold'), stats.sold, 1000, 0);
+  animateNumber($('#statRating'), stats.rating, 1000, 1);
 }
 
 async function renderReviews() {
   try {
     const reviews = await api('/api/reviews');
+    if (!reviews.length) {
+      $('#reviewList').innerHTML = '<div class="empty-state">No reviews yet. Be the first customer to leave one.</div>';
+      return;
+    }
 
-    const reviewList = $('#reviewList');
-    if (!reviewList) return;
-
-    reviewList.innerHTML = reviews.length
-      ? reviews.slice(0, 8).map((review) => `
-        <article class="review-card">
-          <div class="review-stars">
-            ${'★'.repeat(Number(review.stars || 0))}
-            ${'☆'.repeat(5 - Number(review.stars || 0))}
+    const source = reviews.slice(0, 12);
+    const rows = [0, 1, 2].map((rowIndex) => {
+      const rowReviews = source.filter((_, index) => index % 3 === rowIndex);
+      const filled = rowReviews.length ? rowReviews : source;
+      const cards = [...filled, ...filled];
+      return `
+        <div class="review-marquee-row ${rowIndex % 2 ? 'reverse' : ''}">
+          <div class="review-marquee-track">
+            ${cards.map((review) => `
+              <article class="review-card">
+                <div class="review-stars">${'★'.repeat(Number(review.stars || 0))}${'☆'.repeat(5 - Number(review.stars || 0))}</div>
+                <p>${escapeHtml(review.comment || 'Great product.')}</p>
+                <span class="review-author">${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}</span>
+              </article>
+            `).join('')}
           </div>
-          <p>${escapeHtml(review.comment || 'Great product.')}</p>
-          <span class="review-author">
-            ${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}
-          </span>
-        </article>
-      `).join('')
-      : '<div class="empty-state">No reviews yet. Be the first customer to leave one.</div>';
-
-  } catch (error) {
-    console.error('Could not load reviews:', error);
-
-    const reviewList = $('#reviewList');
-    if (reviewList) {
-      reviewList.innerHTML = `
-        <div class="empty-state">
-          Reviews are temporarily unavailable. Please check back soon.
         </div>
       `;
-    }
+    });
+
+    $('#reviewList').innerHTML = `<div class="review-marquee">${rows.join('')}</div>`;
+  } catch (error) {
+    console.error('Could not load reviews:', error);
+    $('#reviewList').innerHTML = '<div class="empty-state">Reviews are temporarily unavailable. Please check back soon.</div>';
   }
 }
 
 async function renderLeaderboard() {
-  try {
-    const rows = await api('/api/leaderboard');
-    const leaderboardList = $('#leaderboardList');
-    if (!leaderboardList) return;
+  const rows = await api('/api/leaderboard');
 
-    leaderboardList.innerHTML = rows.length
-      ? rows.map((row) => `
-        <div class="leader-row">
-          <span class="leader-rank">#${row.rank}</span>
-          <span class="leader-name">${escapeHtml(row.name)}</span>
-          <strong class="leader-spent">${money(row.spent)}</strong>
-        </div>
-      `).join('')
-      : '<div class="empty-state">Leaderboard will appear after the first verified paid orders.</div>';
-  } catch (err) {
-    console.warn("Could not load leaderboard:", err);
+  $('#leaderboardList').innerHTML = rows.length
+    ? rows.map((row) => `
+      <div class="leader-row">
+        <span class="leader-rank">#${row.rank}</span>
+        <span class="leader-name">${escapeHtml(row.name)}</span>
+        <strong class="leader-spent">${money(row.spent)}</strong>
+      </div>
+    `).join('')
+    : '<div class="empty-state">Leaderboard will appear after the first verified paid orders.</div>';
+}
+
+async function openReviewFromUrl() {
+  const reviewCode = new URLSearchParams(window.location.search).get('review');
+  if (!reviewCode || !state.currentUser) return;
+
+  try {
+    const orders = await api('/api/orders');
+    const order = orders.find((row) => (row.order_code || '').toUpperCase() === reviewCode.toUpperCase());
+    if (order?.status === 'DELIVERED' && order.order_items?.length) {
+      reviewModal(order, order.order_items[0]);
+    }
+  } catch (error) {
+    console.error('Review link error:', error);
   }
 }
 
 async function init() {
   try {
     const [settings, products, paymentMethods] = await Promise.all([
-      api('/api/settings').catch(() => ({})),
-      api('/api/products').catch(() => []),
-      api('/api/payment-methods').catch(() => ({}))
+      api('/api/settings'),
+      api('/api/products'),
+      api('/api/payment-methods')
     ]);
 
     state.settings = settings;
@@ -942,48 +958,36 @@ async function init() {
     saveCart();
     applyLanguage();
 
-    await refreshUser();
-
-    await Promise.all([
+    await Promise.allSettled([
       renderStats(),
       renderReviews(),
-      renderLeaderboard()
+      renderLeaderboard(),
+      refreshUser()
     ]);
 
     if (state.currentUser && !state.currentUser.name?.trim()) {
       await requiredNameModal();
     }
 
-    const reviewCode = new URLSearchParams(window.location.search).get('review');
-    if (reviewCode && state.currentUser) {
-      try {
-        const orders = await api('/api/orders');
-        const order = orders.find((row) => (row.order_code || '').toUpperCase() === reviewCode.toUpperCase());
-        if (order?.status === 'DELIVERED' && order.order_items?.length) {
-          reviewModal(order, order.order_items[0]);
-        }
-      } catch (error) {
-        console.error('Review link error:', error);
-      }
-    }
+    await openReviewFromUrl();
   } catch (error) {
     console.error(error);
     toast('Store could not load. Check your Vercel/Supabase setup.');
   }
 }
 
-$('#languageButton')?.addEventListener('click', () => {
+$('#languageButton').addEventListener('click', () => {
   state.language = state.language === 'bn' ? 'en' : 'bn';
   applyLanguage();
 });
 
-$('#cartButton')?.addEventListener('click', renderCart);
-$('#loginButton')?.addEventListener('click', loginModal);
-$('#accountButton')?.addEventListener('click', accountModal);
-$('#trackButton')?.addEventListener('click', () => trackOrderModal());
-$('#modalClose')?.addEventListener('click', closeModal);
+$('#cartButton').addEventListener('click', renderCart);
+$('#loginButton').addEventListener('click', loginModal);
+$('#accountButton').addEventListener('click', accountModal);
+$('#trackButton').addEventListener('click', () => trackOrderModal());
+$('#modalClose').addEventListener('click', closeModal);
 
-$('[data-close-modal]')?.addEventListener('click', closeModal);
+$('[data-close-modal]').addEventListener('click', closeModal);
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
