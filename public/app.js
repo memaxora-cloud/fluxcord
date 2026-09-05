@@ -49,6 +49,7 @@ function money(value) {
 
 function toast(message) {
   const element = $('#toast');
+  if (!element) return;
   element.textContent = message;
   element.classList.add('show');
 
@@ -73,7 +74,10 @@ function closeModal() {
 
 function saveCart() {
   localStorage.setItem('fluxcord_cart', JSON.stringify(state.cart));
-  $('#cartCount').textContent = state.cart.reduce((sum, item) => sum + item.qty, 0);
+  const cartCountEl = $('#cartCount');
+  if (cartCountEl) {
+    cartCountEl.textContent = state.cart.reduce((sum, item) => sum + item.qty, 0);
+  }
 }
 
 async function api(url, options = {}) {
@@ -110,7 +114,10 @@ function applyLanguage() {
     }
   });
 
-  $('#languageButton').textContent = state.language === 'bn' ? 'English' : 'বাংলা';
+  const langBtn = $('#languageButton');
+  if (langBtn) {
+    langBtn.textContent = state.language === 'bn' ? 'English' : 'বাংলা';
+  }
   document.documentElement.lang = state.language === 'bn' ? 'bn' : 'en';
   localStorage.setItem('fluxcord_language', state.language);
 }
@@ -119,17 +126,26 @@ function renderHero() {
   const title = state.settings.hero_title || 'Learn faster.\nBuild smarter.';
   const titleLines = title.split('\n');
 
-  $('#heroTitle').innerHTML = titleLines
-    .map((line, index) => index === titleLines.length - 1
-      ? `<span>${escapeHtml(line)}</span>`
-      : escapeHtml(line))
-    .join('<br>');
+  const heroTitleEl = $('#heroTitle');
+  if (heroTitleEl) {
+    heroTitleEl.innerHTML = titleLines
+      .map((line, index) => index === titleLines.length - 1
+        ? `<span>${escapeHtml(line)}</span>`
+        : escapeHtml(line))
+      .join('<br>');
+  }
 
-  $('#heroDescription').textContent = state.settings.hero_description || '';
+  const heroDescEl = $('#heroDescription');
+  if (heroDescEl) heroDescEl.textContent = state.settings.hero_description || '';
 
-  $('#discordLink').href = state.settings.discord || '#';
-  $('#facebookLink').href = state.settings.facebook || '#';
-  $('#emailLink').href = `mailto:${state.settings.email || 'support@fluxcord.store'}`;
+  const discordBtn = $('#discordLink');
+  if (discordBtn) discordBtn.href = state.settings.discord || '#';
+
+  const fbBtn = $('#facebookLink');
+  if (fbBtn) fbBtn.href = state.settings.facebook || '#';
+
+  const mailBtn = $('#emailLink');
+  if (mailBtn) mailBtn.href = `mailto:${state.settings.email || 'support@fluxcord.store'}`;
 }
 
 function renderFilters() {
@@ -140,7 +156,10 @@ function renderFilters() {
     { value: 'SPECIAL', label: '★ SPECIAL' }
   ];
 
-  $('#filters').innerHTML = filters
+  const filtersEl = $('#filters');
+  if (!filtersEl) return;
+
+  filtersEl.innerHTML = filters
     .map((filter) => `
       <button
         class="filter-button ${state.filter === filter.value ? 'active' : ''}"
@@ -161,12 +180,15 @@ function renderFilters() {
 }
 
 function renderProducts() {
+  const productGrid = $('#productGrid');
+  if (!productGrid) return;
+
   const products = state.products.filter((product) => (
     state.filter === 'ALL' || product.tag === state.filter
   ));
 
   if (!products.length) {
-    $('#productGrid').innerHTML = `
+    productGrid.innerHTML = `
       <div class="empty-state">
         No products are available in this category yet.
       </div>
@@ -174,7 +196,7 @@ function renderProducts() {
     return;
   }
 
-  $('#productGrid').innerHTML = products.map((product) => `
+  productGrid.innerHTML = products.map((product) => `
     <article class="product-card">
       <div class="product-image">
         ${product.image
@@ -420,24 +442,27 @@ async function requiredNameModal() {
 }
 
 async function refreshUser() {
-  const result = await api('/api/me');
-  state.currentUser = result.user;
+  try {
+    const result = await api('/api/me');
+    state.currentUser = result.user;
+  } catch {
+    state.currentUser = null;
+  }
+
+  const loginBtn = $('#loginButton');
+  const accountBtn = $('#accountButton');
 
   if (state.currentUser) {
-    $('#loginButton').classList.add('hidden');
-    $('#accountButton').classList.remove('hidden');
+    if (loginBtn) loginBtn.classList.add('hidden');
+    if (accountBtn) accountBtn.classList.remove('hidden');
   } else {
-    $('#loginButton').classList.remove('hidden');
-    $('#accountButton').classList.add('hidden');
+    if (loginBtn) loginBtn.classList.remove('hidden');
+    if (accountBtn) accountBtn.classList.add('hidden');
   }
 }
 
 async function checkout() {
-  try {
-    await refreshUser();
-  } catch {
-    state.currentUser = null;
-  }
+  await refreshUser();
 
   if (!state.currentUser) {
     closeModal();
@@ -833,49 +858,78 @@ async function trackOrderModal(prefilledCode = '') {
 }
 
 async function renderStats() {
-  const stats = await api('/api/stats');
-
-  $('#statCustomers').textContent = Number(stats.customers).toLocaleString('en-BD');
-  $('#statSold').textContent = Number(stats.sold).toLocaleString('en-BD');
-  $('#statRating').textContent = Number(stats.rating).toFixed(1);
+  try {
+    const stats = await api('/api/stats');
+    if ($('#statCustomers')) $('#statCustomers').textContent = Number(stats.customers || 0).toLocaleString('en-BD');
+    if ($('#statSold')) $('#statSold').textContent = Number(stats.sold || 0).toLocaleString('en-BD');
+    if ($('#statRating')) $('#statRating').textContent = Number(stats.rating || 0).toFixed(1);
+  } catch (err) {
+    console.warn("Could not load stats:", err);
+  }
 }
 
 async function renderReviews() {
-  const reviews = await api('/api/reviews');
+  try {
+    const reviews = await api('/api/reviews');
 
-  $('#reviewList').innerHTML = reviews.length
-    ? reviews.slice(0, 8).map((review) => `
-      <article class="review-card">
-        <div class="review-stars">${'★'.repeat(review.stars)}${'☆'.repeat(5 - review.stars)}</div>
-        <p>${escapeHtml(review.comment || 'Great product.')}</p>
-        <span class="review-author">
-          ${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}
-        </span>
-      </article>
-    `).join('')
-    : '<div class="empty-state">No reviews yet. Be the first customer to leave one.</div>';
+    const reviewList = $('#reviewList');
+    if (!reviewList) return;
+
+    reviewList.innerHTML = reviews.length
+      ? reviews.slice(0, 8).map((review) => `
+        <article class="review-card">
+          <div class="review-stars">
+            ${'★'.repeat(Number(review.stars || 0))}
+            ${'☆'.repeat(5 - Number(review.stars || 0))}
+          </div>
+          <p>${escapeHtml(review.comment || 'Great product.')}</p>
+          <span class="review-author">
+            ${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}
+          </span>
+        </article>
+      `).join('')
+      : '<div class="empty-state">No reviews yet. Be the first customer to leave one.</div>';
+
+  } catch (error) {
+    console.error('Could not load reviews:', error);
+
+    const reviewList = $('#reviewList');
+    if (reviewList) {
+      reviewList.innerHTML = `
+        <div class="empty-state">
+          Reviews are temporarily unavailable. Please check back soon.
+        </div>
+      `;
+    }
+  }
 }
 
 async function renderLeaderboard() {
-  const rows = await api('/api/leaderboard');
+  try {
+    const rows = await api('/api/leaderboard');
+    const leaderboardList = $('#leaderboardList');
+    if (!leaderboardList) return;
 
-  $('#leaderboardList').innerHTML = rows.length
-    ? rows.map((row) => `
-      <div class="leader-row">
-        <span class="leader-rank">#${row.rank}</span>
-        <span class="leader-name">${escapeHtml(row.name)}</span>
-        <strong class="leader-spent">${money(row.spent)}</strong>
-      </div>
-    `).join('')
-    : '<div class="empty-state">Leaderboard will appear after the first verified paid orders.</div>';
+    leaderboardList.innerHTML = rows.length
+      ? rows.map((row) => `
+        <div class="leader-row">
+          <span class="leader-rank">#${row.rank}</span>
+          <span class="leader-name">${escapeHtml(row.name)}</span>
+          <strong class="leader-spent">${money(row.spent)}</strong>
+        </div>
+      `).join('')
+      : '<div class="empty-state">Leaderboard will appear after the first verified paid orders.</div>';
+  } catch (err) {
+    console.warn("Could not load leaderboard:", err);
+  }
 }
 
 async function init() {
   try {
     const [settings, products, paymentMethods] = await Promise.all([
-      api('/api/settings'),
-      api('/api/products'),
-      api('/api/payment-methods')
+      api('/api/settings').catch(() => ({})),
+      api('/api/products').catch(() => []),
+      api('/api/payment-methods').catch(() => ({}))
     ]);
 
     state.settings = settings;
@@ -888,13 +942,13 @@ async function init() {
     saveCart();
     applyLanguage();
 
-await Promise.all([
-  loadProducts(),
-  renderReviews().catch(err => {
-    console.error("Could not load reviews:", err);
-    return [];
-  })
-]);
+    await refreshUser();
+
+    await Promise.all([
+      renderStats(),
+      renderReviews(),
+      renderLeaderboard()
+    ]);
 
     if (state.currentUser && !state.currentUser.name?.trim()) {
       await requiredNameModal();
@@ -918,18 +972,18 @@ await Promise.all([
   }
 }
 
-$('#languageButton').addEventListener('click', () => {
+$('#languageButton')?.addEventListener('click', () => {
   state.language = state.language === 'bn' ? 'en' : 'bn';
   applyLanguage();
 });
 
-$('#cartButton').addEventListener('click', renderCart);
-$('#loginButton').addEventListener('click', loginModal);
-$('#accountButton').addEventListener('click', accountModal);
-$('#trackButton').addEventListener('click', () => trackOrderModal());
-$('#modalClose').addEventListener('click', closeModal);
+$('#cartButton')?.addEventListener('click', renderCart);
+$('#loginButton')?.addEventListener('click', loginModal);
+$('#accountButton')?.addEventListener('click', accountModal);
+$('#trackButton')?.addEventListener('click', () => trackOrderModal());
+$('#modalClose')?.addEventListener('click', closeModal);
 
-$('[data-close-modal]').addEventListener('click', closeModal);
+$('[data-close-modal]')?.addEventListener('click', closeModal);
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
