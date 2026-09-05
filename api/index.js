@@ -177,7 +177,25 @@ async function getProductIds(items) {
   )];
 }
 
-function orderCode(id) {
+function randomOrderCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '#';
+  for (let i = 0; i < 8; i += 1) {
+    code += alphabet[crypto.randomInt(0, alphabet.length)];
+  }
+  return code;
+}
+
+async function createUniqueOrderCode() {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const code = randomOrderCode();
+    const { data } = await supabase.from('orders').select('id').eq('order_code', code).maybeSingle();
+    if (!data) return code;
+  }
+  throw new Error('Could not generate a unique order ID.');
+}
+
+function orderCodeFallback(id) {
   return `#${String(id).padStart(3, '0')}`;
 }
 
@@ -196,14 +214,15 @@ function escapeHtml(value) {
 }
 
 async function sendDeliveryEmail(orderId) {
-  const { data: order } = await supabase
+  const { data: order, error: orderLookupError } = await supabase
     .from('orders')
     .select('id,order_code,email,total,status,created_at')
     .eq('id', orderId)
     .maybeSingle();
 
+  if (orderLookupError) throw orderLookupError;
   if (!order || order.status !== 'DELIVERED') {
-    return;
+    return false;
   }
 
   const { data: items } = await supabase
@@ -247,7 +266,7 @@ async function sendDeliveryEmail(orderId) {
     'Need help? Contact FluxCord support.'
   ].join('\n');
 
-  await sendMail({
+  const sent = await sendMail({
     to: order.email,
     subject: `🎉 Your FluxCord order ${order.order_code} is ready!`,
     text,
@@ -283,6 +302,8 @@ async function sendDeliveryEmail(orderId) {
       </div>
     `
   });
+
+  return sent;
 }
 
 app.get('/api/health', async (req, res) => {
@@ -351,25 +372,42 @@ app.get('/api/products', async (req, res) => {
 });
 
 app.get('/api/reviews', async (req, res) => {
-  const { data, error } = await supabase
+  const { data: reviews, error } = await supabase
     .from('reviews')
-    .select('id,email,stars,comment,created_at,users(name),products(name)')
+    .select('id,user_id,email,product_id,stars,comment,created_at')
     .eq('approved', true)
     .order('id', { ascending: false })
     .limit(30);
 
   if (error) {
-    console.error(error);
+    console.error('Public reviews query error:', error);
     return fail(res, 500, 'Could not load reviews.');
   }
 
-  return res.json(
-    (data || []).map((review) => ({
-      ...review,
-      product_name: review.products?.name || 'Product',
-      name: review.users?.name || 'Customer'
-    }))
-  );
+  const productIds = [...new Set((reviews || []).map((r) => Number(r.product_id)).filter(Boolean))];
+  const userIds = [...new Set((reviews || []).map((r) => Number(r.user_id)).filter(Boolean))];
+
+  const [{ data: products, error: productsError }, { data: users, error: usersError }] = await Promise.all([
+    productIds.length ? supabase.from('products').select('id,name').in('id', productIds) : Promise.resolve({ data: [], error: null }),
+    userIds.length ? supabase.from('users').select('id,name').in('id', userIds) : Promise.resolve({ data: [], error: null })
+  ]);
+
+  if (productsError || usersError) {
+    console.error('Public reviews relation lookup error:', productsError || usersError);
+    return fail(res, 500, 'Could not load reviews.');
+  }
+
+  const productMap = new Map((products || []).map((p) => [Number(p.id), p.name]));
+  const userMap = new Map((users || []).map((u) => [Number(u.id), u.name]));
+
+  return res.json((reviews || []).map((review) => ({
+    id: review.id,
+    stars: Number(review.stars || 0),
+    comment: review.comment || '',
+    created_at: review.created_at,
+    product_name: productMap.get(Number(review.product_id)) || 'Product',
+    name: userMap.get(Number(review.user_id)) || 'Customer'
+  })));
 });
 
 app.post('/api/auth/request-otp', async (req, res) => {
@@ -782,7 +820,13 @@ app.post('/api/orders', auth, async (req, res) => {
     return fail(res, 500, 'Could not create order.');
   }
 
-  const code = orderCode(order.id);
+  let code;
+  try {
+    code = await createUniqueOrderCode();
+  } catch (codeGenerationError) {
+    console.error(codeGenerationError);
+    return fail(res, 500, 'Could not assign a unique order ID.');
+  }
 
   const { error: codeError } = await supabase
     .from('orders')
@@ -855,7 +899,7 @@ app.post('/api/orders', auth, async (req, res) => {
 app.get('/api/orders', auth, async (req, res) => {
   let query = supabase
     .from('orders')
-    .select('*,order_items(*)')
+    .select('*,order_items(*),tickets(id,status,created_at)')
     .order('id', { ascending: false });
 
   if (!req.user.admin) {
@@ -876,7 +920,7 @@ app.get('/api/orders/:code', async (req, res) => {
 
   const { data: order, error } = await supabase
     .from('orders')
-    .select('*,order_items(*),tickets(id,status)')
+    .select('*,order_items(*),tickets(id,status,created_at)')
     .eq('order_code', code)
     .maybeSingle();
 
@@ -1151,7 +1195,7 @@ app.delete('/api/admin/products/:id', auth, adminOnly, async (req, res) => {
 app.get('/api/admin/orders', auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase
     .from('orders')
-    .select('*,order_items(*),tickets(id,status)')
+    .select('*,order_items(*),tickets(id,status,created_at)')
     .order('id', { ascending: false });
 
   if (error) {
@@ -1185,15 +1229,31 @@ app.patch('/api/admin/orders/:id', auth, adminOnly, async (req, res) => {
     return fail(res, 400, error.message);
   }
 
+  let emailSent = null;
   if (status === 'DELIVERED' && before?.status !== 'DELIVERED') {
     try {
-      await sendDeliveryEmail(id);
+      emailSent = await sendDeliveryEmail(id);
     } catch (mailError) {
       console.error('Delivery email error:', mailError);
+      emailSent = false;
     }
   }
 
-  return res.json({ ok: true });
+  return res.json({ ok: true, email_sent: emailSent });
+});
+
+app.post('/api/admin/orders/:id/resend-email', auth, adminOnly, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return fail(res, 400, 'Invalid order.');
+
+  try {
+    const sent = await sendDeliveryEmail(id);
+    if (!sent) return fail(res, 400, 'Email could not be sent. Check SMTP environment variables in Vercel.');
+    return res.json({ ok: true, email_sent: true });
+  } catch (error) {
+    console.error('Resend delivery email error:', error);
+    return fail(res, 500, `Email delivery failed: ${error.message}`);
+  }
 });
 
 app.get('/api/admin/coupons', auth, adminOnly, async (req, res) => {
