@@ -623,6 +623,11 @@ async function accountModal() {
               <button class="secondary-button small-button" data-view-order="${order.id}">
                 View
               </button>
+              ${order.status === 'DELIVERED' ? (order.order_items || []).map((item) => `
+                <button class="secondary-button small-button" data-review-order="${order.id}" data-review-product="${item.product_id}">
+                  ⭐ Review
+                </button>
+              `).join('') : ''}
             </div>
           `).join('')
           : '<div class="empty-state">No orders yet.</div>'}
@@ -645,6 +650,16 @@ async function accountModal() {
       });
     });
 
+    document.querySelectorAll('[data-review-order]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const order = orders.find((row) => row.id === Number(button.dataset.reviewOrder));
+        const item = order?.order_items?.find((row) => row.product_id === Number(button.dataset.reviewProduct));
+        if (order && item) {
+          reviewModal(order, item);
+        }
+      });
+    });
+
     $('#logoutButton').addEventListener('click', async () => {
       await api('/api/auth/logout', { method: 'POST' });
       window.location.reload();
@@ -656,6 +671,64 @@ async function accountModal() {
 
 function orderCodeFallback(id) {
   return `#${String(id).padStart(3, '0')}`;
+}
+
+function reviewModal(order, item) {
+  let selectedStars = 5;
+
+  openModal(`
+    <h2>⭐ Leave a Review</h2>
+    <p class="muted">${escapeHtml(item.name)} · ${escapeHtml(order.order_code || orderCodeFallback(order.id))}</p>
+    <form class="form" id="reviewForm">
+      <input type="hidden" id="reviewProductId" value="${item.product_id}">
+      <div>
+        <label>Rating</label>
+        <div class="review-rating-picker" id="reviewStars">
+          ${[1,2,3,4,5].map((star) => `<button type="button" class="star-button ${star <= 5 ? 'active' : ''}" data-star="${star}">★</button>`).join('')}
+        </div>
+      </div>
+      <div>
+        <label for="reviewComment">Your review</label>
+        <textarea id="reviewComment" maxlength="500" placeholder="Tell us what you thought about this product..." required></textarea>
+      </div>
+      <button class="primary-button" type="submit">Submit Review →</button>
+    </form>
+  `);
+
+  const updateStars = () => {
+    document.querySelectorAll('[data-star]').forEach((button) => {
+      button.classList.toggle('active', Number(button.dataset.star) <= selectedStars);
+    });
+  };
+
+  document.querySelectorAll('[data-star]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectedStars = Number(button.dataset.star);
+      updateStars();
+    });
+  });
+
+  $('#reviewForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await api('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify({
+          order_code: order.order_code || orderCodeFallback(order.id),
+          product_id: Number($('#reviewProductId').value),
+          stars: selectedStars,
+          comment: $('#reviewComment').value.trim()
+        })
+      });
+      closeModal();
+      toast('Review submitted! It will appear after admin approval.');
+      await renderReviews();
+    } catch (error) {
+      toast(error.message);
+    }
+  });
+
+  updateStars();
 }
 
 async function orderDetailModal(order) {
@@ -776,7 +849,7 @@ async function renderReviews() {
         <div class="review-stars">${'★'.repeat(review.stars)}${'☆'.repeat(5 - review.stars)}</div>
         <p>${escapeHtml(review.comment || 'Great product.')}</p>
         <span class="review-author">
-          ${escapeHtml(review.email)} · ${escapeHtml(review.product_name)}
+          ${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}
         </span>
       </article>
     `).join('')
@@ -824,6 +897,19 @@ async function init() {
 
     if (state.currentUser && !state.currentUser.name?.trim()) {
       await requiredNameModal();
+    }
+
+    const reviewCode = new URLSearchParams(window.location.search).get('review');
+    if (reviewCode && state.currentUser) {
+      try {
+        const orders = await api('/api/orders');
+        const order = orders.find((row) => (row.order_code || '').toUpperCase() === reviewCode.toUpperCase());
+        if (order?.status === 'DELIVERED' && order.order_items?.length) {
+          reviewModal(order, order.order_items[0]);
+        }
+      } catch (error) {
+        console.error('Review link error:', error);
+      }
     }
   } catch (error) {
     console.error(error);
