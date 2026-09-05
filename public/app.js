@@ -888,12 +888,13 @@ async function init() {
     saveCart();
     applyLanguage();
 
-    await Promise.all([
-      renderStats(),
-      renderReviews(),
-      renderLeaderboard(),
-      refreshUser()
-    ]);
+await Promise.all([
+  loadProducts(),
+  renderReviews().catch(err => {
+    console.error("Could not load reviews:", err);
+    return [];
+  })
+]);
 
     if (state.currentUser && !state.currentUser.name?.trim()) {
       await requiredNameModal();
