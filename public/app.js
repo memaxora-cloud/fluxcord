@@ -76,7 +76,7 @@ function renderHero() {
   document.querySelectorAll('[data-store-tagline]').forEach((el) => { el.textContent = state.settings.tagline || ''; });
   document.title = `${storeName} — Premium Digital Store`;
 
-  const title = state.settings.hero_title || `⚡ ${storeName}`;
+  const title = state.settings.hero_title || storeName;
   const titleLines = title.split('\n');
 
   $('#heroTitle').innerHTML = titleLines
@@ -91,23 +91,39 @@ function renderHero() {
   $('#facebookLink').href = state.settings.facebook || '#';
   $('#instagramLink').href = state.settings.instagram || '#';
   $('#youtubeLink').href = state.settings.youtube || '#';
-  $('#emailLink').href = `mailto:${state.settings.email || 'support@fluxcord.store'}`;
+  const email = state.settings.email || 'support@fluxcord.store';
+  $('#emailLink').href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`;
+  $('#emailLink').target = '_blank';
+  $('#emailLink').rel = 'noopener';
+  $('#footerTermsLink').href = state.settings.terms_url || '/terms.html';
+  $('#footerPrivacyLink').href = state.settings.privacy_url || '/privacy.html';
 }
+
+function normalizeProductTags(product) {
+  const source = Array.isArray(product.tags) && product.tags.length
+    ? product.tags
+    : [product.tag || 'FRESH'];
+
+  return [...new Set(source.map((tag) => String(tag || '').toUpperCase()).map((tag) => tag === 'SPECIAL' ? 'DISCOUNT' : tag).filter((tag) => ['FRESH', 'HOT', 'DISCOUNT'].includes(tag)))];
+}
+
+const TAG_META = {
+  FRESH: { icon: '🆕', label: 'Fresh', className: 'tag-fresh' },
+  HOT: { icon: '🔥', label: 'Hot', className: 'tag-hot' },
+  DISCOUNT: { icon: '💸', label: 'Discount', className: 'tag-discount' }
+};
 
 function renderFilters() {
   const filters = [
     { value: 'ALL', icon: '✦', label: 'ALL', className: 'filter-all' },
-    { value: 'FRESH', icon: '✦', label: 'FRESH', className: 'filter-fresh' },
+    { value: 'FRESH', icon: '🆕', label: 'FRESH', className: 'filter-fresh' },
     { value: 'HOT', icon: '🔥', label: 'HOT', className: 'filter-hot' },
-    { value: 'SPECIAL', icon: '★', label: 'SPECIAL', className: 'filter-special' }
+    { value: 'DISCOUNT', icon: '💸', label: 'DISCOUNT', className: 'filter-discount' }
   ];
 
   $('#filters').innerHTML = filters
     .map((filter) => `
-      <button
-        class="filter-button ${filter.className} ${state.filter === filter.value ? 'active' : ''}"
-        data-filter="${filter.value}"
-      >
+      <button class="filter-button ${filter.className} ${state.filter === filter.value ? 'active' : ''}" data-filter="${filter.value}">
         <span class="filter-icon" aria-hidden="true">${filter.icon}</span>
         <span>${filter.label}</span>
       </button>
@@ -124,9 +140,10 @@ function renderFilters() {
 }
 
 function renderProducts() {
-  const products = state.products.filter((product) => (
-    state.filter === 'ALL' || product.tag === state.filter
-  ));
+  const products = state.products.filter((product) => {
+    const tags = normalizeProductTags(product);
+    return state.filter === 'ALL' || tags.includes(state.filter);
+  });
 
   if (!products.length) {
     $('#productGrid').innerHTML = `
@@ -137,39 +154,40 @@ function renderProducts() {
     return;
   }
 
-  $('#productGrid').innerHTML = products.map((product) => `
-    <article class="product-card">
-      <div class="product-image">
-        ${product.image
-          ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}">`
-          : '<div class="product-fallback">📘</div>'}
-      </div>
-      <div class="product-body">
-        <span class="product-tag tag-${String(product.tag || 'FRESH').toLowerCase()}">
-          <span class="tag-icon" aria-hidden="true">${product.tag === 'HOT' ? '🔥' : product.tag === 'SPECIAL' ? '★' : '✦'}</span>
-          ${escapeHtml(product.tag)}
-        </span>
-        <h3>${escapeHtml(product.name)}</h3>
-        <p>${escapeHtml(product.description)}</p>
-        <div class="product-meta">
-          <span>★ ${Number(product.rating || 0).toFixed(1)}</span>
-          <span>•</span>
-          <span>${product.review_count || 0} reviews</span>
+  $('#productGrid').innerHTML = products.map((product) => {
+    const tags = normalizeProductTags(product);
+    const badges = tags.map((tag) => {
+      const meta = TAG_META[tag];
+      return `<span class="product-badge ${meta.className}" title="${meta.label}"><span aria-hidden="true">${meta.icon}</span><span>${meta.label}</span></span>`;
+    }).join('');
+
+    return `
+      <article class="product-card">
+        <div class="product-image">
+          ${product.image
+            ? `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}">`
+            : '<div class="product-fallback">📘</div>'}
+          <div class="product-badges">${badges}</div>
         </div>
-        <div class="product-bottom product-actions">
-          <span class="product-price">${money(product.price_bdt)}</span>
-          <div class="product-buttons">
-            <button class="primary-button small-button" data-buy-product="${product.id}">
-              Buy Now →
-            </button>
-            <button class="secondary-button small-button" data-add-product="${product.id}">
-              Add to Cart →
-            </button>
+        <div class="product-body">
+          <h3>${escapeHtml(product.name)}</h3>
+          <p>${escapeHtml(product.description)}</p>
+          <div class="product-meta">
+            <span>★ ${Number(product.rating || 0).toFixed(1)}</span>
+            <span>•</span>
+            <span>${product.review_count || 0} reviews</span>
+          </div>
+          <div class="product-bottom product-actions">
+            <span class="product-price">${money(product.price_bdt)}</span>
+            <div class="product-buttons">
+              <button class="primary-button small-button" data-buy-product="${product.id}">Buy Now →</button>
+              <button class="secondary-button small-button" data-add-product="${product.id}">Add to Cart →</button>
+            </div>
           </div>
         </div>
-      </div>
-    </article>
-  `).join('');
+      </article>
+    `;
+  }).join('');
 
   document.querySelectorAll('[data-buy-product]').forEach((button) => {
     button.addEventListener('click', async () => {
