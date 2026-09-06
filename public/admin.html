@@ -65,6 +65,20 @@
     </main>
   </div>
 
-  <script src="/admin.js"></script>
+  <script>
+    async function loadAdminApp() {
+      try {
+        const response = await fetch('/api/admin/script', { credentials: 'same-origin' });
+        if (!response.ok) throw new Error('Not authorized.');
+        const code = await response.text();
+        const script = document.createElement('script');
+        script.textContent = code;
+        document.body.appendChild(script);
+      } catch {
+        // The private admin bundle is intentionally unavailable before admin authentication.
+      }
+    }
+    loadAdminApp();
+  </script>
 </body>
 </html>
