@@ -426,7 +426,9 @@ app.get('/api/reviews', async (req, res) => {
     comment: review.comment || '',
     created_at: review.created_at,
     product_name: productMap.get(Number(review.product_id)) || 'Product',
-    name: userMap.get(Number(review.user_id)) || 'Customer'
+    name: review.source === 'ADMIN' ? (review.display_name || 'FluxCord Staff') : (userMap.get(Number(review.user_id)) || 'Customer'),
+    source: review.source || 'CUSTOMER',
+    source_label: review.source === 'ADMIN' ? 'Staff testimonial' : 'Verified customer'
   })));
 });
 
@@ -1008,8 +1010,10 @@ app.post('/api/reviews', auth, async (req, res) => {
     .eq('order_code', orderCodeValue)
     .maybeSingle();
 
-  if (!order || order.user_id !== req.user.id || order.status !== 'DELIVERED') {
-    return fail(res, 403, 'Only delivered orders can be reviewed.');
+  const ownsOrder = order && (order.user_id === req.user.id || cleanEmail(order.email) === cleanEmail(req.user.email));
+
+  if (!order || !ownsOrder || order.status !== 'DELIVERED') {
+    return fail(res, 403, 'Only your delivered orders can be reviewed.');
   }
 
   const { data: item } = await supabase
@@ -1389,7 +1393,7 @@ app.delete('/api/admin/coupons/:id', auth, adminOnly, async (req, res) => {
 app.get('/api/admin/reviews', auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase
     .from('reviews')
-    .select('id,email,stars,comment,approved,created_at,user_id,order_id,users(name),products(name)')
+    .select('id,email,stars,comment,approved,created_at,user_id,order_id,source,display_name,users(name),products(name)')
     .order('id', { ascending: false });
 
   if (error) {
@@ -1403,6 +1407,40 @@ app.get('/api/admin/reviews', auth, adminOnly, async (req, res) => {
       name: review.users?.name || 'Customer'
     }))
   );
+});
+
+app.post('/api/admin/reviews', auth, adminOnly, async (req, res) => {
+  const productId = Number(req.body.product_id);
+  const displayName = String(req.body.name || '').trim().slice(0, 80);
+  const email = cleanEmail(req.body.email);
+  const stars = Number(req.body.stars);
+  const comment = String(req.body.comment || '').trim().slice(0, 500);
+
+  if (!Number.isInteger(productId) || productId <= 0) return fail(res, 400, 'Choose a product.');
+  if (!displayName) return fail(res, 400, 'Name is required.');
+  if (!validEmail(email)) return fail(res, 400, 'Enter a valid email.');
+  if (!Number.isInteger(stars) || stars < 1 || stars > 5) return fail(res, 400, 'Stars must be between 1 and 5.');
+  if (!comment) return fail(res, 400, 'Review text cannot be empty.');
+
+  const { data: product } = await supabase.from('products').select('id').eq('id', productId).maybeSingle();
+  if (!product) return fail(res, 404, 'Product not found.');
+
+  const { data, error } = await supabase.from('reviews').insert({
+    product_id: productId,
+    email,
+    stars,
+    comment,
+    approved: true,
+    source: 'ADMIN',
+    display_name: displayName
+  }).select('id').single();
+
+  if (error) {
+    console.error(error);
+    return fail(res, 400, error.message);
+  }
+
+  return res.json({ ok: true, review: data, message: 'Staff testimonial created.' });
 });
 
 app.patch('/api/admin/reviews/:id', auth, adminOnly, async (req, res) => {
