@@ -1355,19 +1355,74 @@ button {
 .auth-switch { display:flex; gap:6px; padding:4px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; margin-bottom:22px; }.auth-tab{flex:1;padding:11px;border-radius:10px;background:transparent;color:var(--muted);font-weight:900}.auth-tab.active{background:rgba(141,53,255,.18);color:#fff}.button-loader{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:buttonSpin .7s linear infinite;vertical-align:-2px;margin-right:7px}@keyframes buttonSpin{to{transform:rotate(360deg)}}
 @media(max-width:900px){.checkout-layout{grid-template-columns:1fr}.checkout-summary{position:static}.product-grid{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr}.hero-visual{min-height:300px}.nav-links{display:none}}
 @media(max-width:620px){.navbar{margin-top:8px}.nav-actions .text-button{display:none}.container{width:min(100% - 24px,1160px)}.hero{padding-top:45px}.hero h1{font-size:54px}.hero-visual{min-height:260px}.hero-orb-ring{width:230px;height:230px}.hero-orb-glow{width:220px;height:220px}.hero-logo{width:110px;height:110px}.stats{grid-template-columns:1fr}.product-grid{grid-template-columns:1fr}.section{padding:70px 0}.checkout-main-card,.payment-success-card{padding:22px}.contact-grid{grid-template-columns:1fr}.checkout-top{flex-wrap:wrap}.checkout-id{margin-left:0}.review-grid{width:calc(100% + 24px);margin-left:-12px}.review-card{width:260px;flex-basis:260px}}
+\n\n/* FluxCord Premium Clean Typography + Floating Hero Logo */
+:root {
+  --fc-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --fc-serif: 'Outfit', 'Inter', system-ui, sans-serif;
+}
 
+body, button, input, textarea, select {
+  font-family: var(--fc-serif);
+}
 
-/* FluxCord — bold, clean, QUILKA-inspired typography */
-:root { --fc-display: 'Outfit', Inter, system-ui, sans-serif; --fc-body: 'Outfit', Inter, system-ui, sans-serif; }
-body, button, input, textarea, select { font-family: var(--fc-body); }
 body { font-weight: 500; }
-.brand span,.nav-links a,.nav-actions button,.hero h1,.section-heading h2,.section-intro h2,.faq-section h2,.hero-proof strong,.stat-card strong,.product-card h3,.product-price,.primary-button,.secondary-button,.outline-button,.small-button,.auth-tab,.modal h2,.modal h3,.checkout-title { font-family: var(--fc-display); font-weight: 800; }
-.hero h1 { letter-spacing: -0.045em; }
+
+.brand span, .nav-links a, .nav-actions button, .hero h1,
+.section-heading h2, .section-intro h2, .faq-section h2, .hero-proof strong,
+.stat-card strong, .product-card h3, .product-price, .primary-button,
+.secondary-button, .outline-button, .small-button, .auth-tab, .modal h2,
+.modal h3, .checkout-title, .review-card, .review-card p, .review-author,
+label, input, textarea, select, .muted, small {
+  font-family: var(--fc-display);
+}
+
+.hero h1 { letter-spacing: -0.035em; font-weight: 800; }
+
+input, textarea, select { font-weight: 500; letter-spacing: .005em; }
+input::placeholder, textarea::placeholder { font-family: var(--fc-display); font-weight: 400; }
+.review-card p, .review-author, .field-help, .form-note, .muted, small { font-weight: 500; letter-spacing: .01em; }
+
 .hero-orb { min-height: 540px; }
 .hero-orb-glow { width: 440px; height: 440px; animation: wizardGlow 5s ease-in-out infinite; }
 .hero-orb-ring { width: 500px; height: 500px; }
-.hero-logo { width: min(360px,58vw); height: min(360px,58vw); border-radius:58px; animation:wizardFloat 4.2s ease-in-out infinite; filter:drop-shadow(0 35px 75px rgba(119,57,255,.38)); }
-@keyframes wizardFloat { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-22px) rotate(1.5deg) scale(1.035)} }
-@keyframes wizardGlow { 0%,100%{transform:scale(1);opacity:.82} 50%{transform:scale(1.08);opacity:1} }
-@media(max-width:900px){.hero-orb{min-height:440px}.hero-logo{width:min(300px,68vw);height:min(300px,68vw)}.hero-orb-ring{width:390px;height:390px}.hero-orb-glow{width:340px;height:340px}}
-@media(max-width:640px){.hero-orb{min-height:360px}.hero-logo{width:250px;height:250px;border-radius:42px}.hero-orb-ring{width:310px;height:310px}.hero-orb-glow{width:270px;height:270px}}
+.hero-logo { width: min(360px, 58vw); height: min(360px, 58vw); border-radius: 58px; animation: wizardFloat 4.2s ease-in-out infinite; filter: drop-shadow(0 35px 75px rgba(119,57,255,.38)); }
+@keyframes wizardFloat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-22px) rotate(1.5deg) scale(1.035); } }
+@keyframes wizardGlow { 0%,100% { transform: scale(1); opacity: .82; } 50% { transform: scale(1.08); opacity: 1; } }
+
+/* Premium footer */
+.footer { margin-top: 80px; border-top: 1px solid rgba(255,255,255,.08); background: radial-gradient(circle at 50% 0%, rgba(141,53,255,.10), transparent 48%), rgba(6,6,10,.94); }
+.footer-inner { padding: 46px 0 34px; display:grid; grid-template-columns: 1.4fr 1fr auto; align-items:end; gap:30px; }
+.footer-brand { font-size: 28px; font-weight: 800; letter-spacing: -.04em; }
+.footer p { margin:8px 0 0; color:var(--muted); font-size:13px; }
+.footer-links { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; }
+.footer-links a { padding:10px 13px; border:1px solid var(--border); border-radius:999px; background:rgba(255,255,255,.025); font-size:12px; font-weight:700; transition:.2s ease; }
+.footer-links a:hover { transform:translateY(-2px); border-color:rgba(167,125,255,.38); background:rgba(141,53,255,.08); }
+.footer-inner > span { color:var(--muted); font-size:11px; text-align:right; }
+.footer-inner > span a { color:inherit; text-decoration:none; }
+.footer-inner > span a:hover { color:#fff; }
+
+/* Legal pages */
+.legal-page { min-height:100vh; padding:38px 0 80px; }
+.legal-brand { display:inline-flex; margin-bottom:28px; }
+.legal-card { max-width:900px; margin:0 auto; padding:48px; border:1px solid var(--border); border-radius:28px; background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018)); box-shadow:var(--shadow); }
+.legal-card h1 { font-size:clamp(42px,6vw,72px); margin:10px 0 8px; letter-spacing:-.05em; }
+.legal-card h2 { margin:32px 0 10px; font-size:22px; }
+.legal-card p, .legal-card li { color:var(--muted); line-height:1.8; font-size:14px; }
+.legal-card ul { padding-left:22px; }
+
+@media (max-width:900px) {
+  .hero-orb { min-height:440px; }
+  .hero-logo { width:min(300px,68vw); height:min(300px,68vw); }
+  .hero-orb-ring { width:390px; height:390px; }
+  .hero-orb-glow { width:340px; height:340px; }
+  .footer-inner { grid-template-columns:1fr; align-items:start; }
+  .footer-links { justify-content:flex-start; }
+  .footer-inner > span { text-align:left; }
+}
+@media (max-width:640px) {
+  .hero-orb { min-height:360px; }
+  .hero-logo { width:250px; height:250px; border-radius:42px; }
+  .hero-orb-ring { width:310px; height:310px; }
+  .hero-orb-glow { width:270px; height:270px; }
+  .legal-card { padding:26px 20px; border-radius:22px; }
+}
