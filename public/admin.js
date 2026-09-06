@@ -381,7 +381,6 @@ async function orders() {
                       <option value="${status}" ${row.status === status ? 'selected' : ''}>${status}</option>
                     `).join('')}
                   </select>
-                  ${row.status === 'DELIVERED' ? `<button class="btn secondary" data-resend-email="${row.id}" style="margin-top:6px;width:100%">✉ Resend Delivery Email</button>` : ''}
                 </td>
               </tr>
             `).join('')}
@@ -391,34 +390,13 @@ async function orders() {
     </div>
   `;
 
-  document.querySelectorAll('[data-resend-email]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      button.disabled = true;
-      button.textContent = 'Sending…';
-      try {
-        await api(`/api/admin/orders/${button.dataset.resendEmail}/resend-email`, { method: 'POST' });
-        alert('Delivery email sent successfully.');
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        button.disabled = false;
-        button.textContent = '✉ Resend Delivery Email';
-      }
-    });
-  });
-
   document.querySelectorAll('[data-order-status]').forEach((select) => {
     select.addEventListener('change', async () => {
       try {
-        const result = await api(`/api/admin/orders/${select.dataset.orderStatus}`, {
+        await api(`/api/admin/orders/${select.dataset.orderStatus}`, {
           method: 'PATCH',
           body: JSON.stringify({ status: select.value })
         });
-        if (select.value === 'DELIVERED') {
-          alert(result.email_sent === false
-            ? 'Order marked DELIVERED, but the email could not be sent. Check SMTP settings in Vercel.'
-            : 'Order marked DELIVERED and the delivery email was sent.');
-        }
         await orders();
       } catch (error) {
         alert(error.message);
@@ -654,9 +632,22 @@ async function coupons() {
 }
 
 async function reviews() {
-  const rows = await api('/api/admin/reviews');
+  const [rows, products] = await Promise.all([api('/api/admin/reviews'), api('/api/admin/products')]);
 
   $('#content').innerHTML = `
+    <div class="panel">
+      <h2>Create Staff Testimonial</h2>
+      <div class="notice" style="margin-bottom:15px">Create a custom testimonial for your storefront. It is stored as an admin-created testimonial and is not presented as a verified customer purchase.</div>
+      <form id="fakeReviewForm" class="setting-grid">
+        <label>Name<input name="name" maxlength="60" required placeholder="John Doe"></label>
+        <label>Email<input name="email" type="email" required placeholder="john@example.com"></label>
+        <label>Product<select name="product_id" required>${products.map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}</select></label>
+        <label>Rating<select name="stars">${[5,4,3,2,1].map((n) => `<option value="${n}">${n} / 5</option>`).join('')}</select></label>
+        <label style="grid-column:1/-1">Review<textarea name="comment" maxlength="500" required placeholder="Write the testimonial..."></textarea></label>
+        <button class="btn" type="submit">Publish Testimonial</button>
+      </form>
+    </div>
+
     <div class="panel">
       <h2>Review Moderation</h2>
       <div class="table-wrap">
@@ -675,7 +666,7 @@ async function reviews() {
             ${rows.map((row) => `
               <tr>
                 <td>${escapeHtml(row.product_name)}</td>
-                <td><strong>${escapeHtml(row.name || 'Customer')}</strong><br><small>${escapeHtml(row.email)}</small></td>
+                <td>${escapeHtml(row.email)}</td>
                 <td>${'★'.repeat(row.stars)}${'☆'.repeat(5 - row.stars)}</td>
                 <td>${escapeHtml(row.comment)}</td>
                 <td>${row.approved ? 'APPROVED' : 'PENDING'}</td>
@@ -683,7 +674,6 @@ async function reviews() {
                   <button class="btn" data-review-approve="${row.id}" data-next-approved="${!row.approved}">
                     ${row.approved ? 'Unapprove' : 'Approve'}
                   </button>
-                  <button class="btn secondary" data-review-edit="${row.id}">Edit</button>
                   <button class="btn danger" data-review-delete="${row.id}">Delete</button>
                 </td>
               </tr>
@@ -694,32 +684,21 @@ async function reviews() {
     </div>
   `;
 
+  $('#fakeReviewForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(event.target));
+    try {
+      await api('/api/admin/reviews/fake', { method: 'POST', body: JSON.stringify(data) });
+      alert('Testimonial published.');
+      await reviews();
+    } catch (error) { alert(error.message); }
+  });
+
   document.querySelectorAll('[data-review-approve]').forEach((button) => {
     button.addEventListener('click', async () => {
       await api(`/api/admin/reviews/${button.dataset.reviewApprove}`, {
         method: 'PATCH',
         body: JSON.stringify({ approved: button.dataset.nextApproved === 'true' })
-      });
-      await reviews();
-    });
-  });
-
-  document.querySelectorAll('[data-review-edit]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const row = rows.find((item) => item.id === Number(button.dataset.reviewEdit));
-      if (!row) return;
-      const starsInput = window.prompt('Rating (1-5):', String(row.stars));
-      if (starsInput === null) return;
-      const stars = Number(starsInput);
-      if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
-        alert('Rating must be between 1 and 5.');
-        return;
-      }
-      const comment = window.prompt('Review text:', row.comment || '');
-      if (comment === null) return;
-      await api(`/api/admin/reviews/${row.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ stars, comment })
       });
       await reviews();
     });
@@ -751,7 +730,11 @@ async function settings() {
     'stat_sold_bonus',
     'discord',
     'facebook',
-    'email'
+    'instagram',
+    'youtube',
+    'email',
+    'terms_url',
+    'privacy_url'
   ];
 
   $('#content').innerHTML = `
