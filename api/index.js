@@ -40,7 +40,9 @@ const defaultSettings = {
   stat_sold_bonus: '20',
   discord: 'https://discord.com/',
   facebook: 'https://facebook.com/',
-  email: 'support@fluxcord.store'
+  email: 'support@fluxcord.store',
+  terms_url: '/terms.html',
+  privacy_url: '/privacy.html'
 };
 
 const paymentMethods = {
@@ -394,7 +396,7 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/reviews', async (req, res) => {
   const { data: reviews, error } = await supabase
     .from('reviews')
-    .select('id,user_id,email,product_id,stars,comment,created_at')
+    .select('id,user_id,email,reviewer_name,product_id,stars,comment,created_at')
     .eq('approved', true)
     .order('id', { ascending: false })
     .limit(30);
@@ -426,9 +428,8 @@ app.get('/api/reviews', async (req, res) => {
     comment: review.comment || '',
     created_at: review.created_at,
     product_name: productMap.get(Number(review.product_id)) || 'Product',
-    name: review.source === 'ADMIN' ? (review.display_name || 'FluxCord Staff') : (userMap.get(Number(review.user_id)) || 'Customer'),
-    source: review.source || 'CUSTOMER',
-    source_label: review.source === 'ADMIN' ? 'Staff testimonial' : 'Verified customer'
+    name: review.reviewer_name || userMap.get(Number(review.user_id)) || 'Customer',
+    email: review.email || ''
   })));
 });
 
@@ -654,6 +655,25 @@ app.post('/api/account/name', auth, async (req, res) => {
   });
 
   return res.json({ ok: true, user: { ...user, admin: false } });
+});
+
+app.put('/api/account/profile', auth, async (req, res) => {
+  const name = String(req.body.name || '').trim().replace(/\s+/g, ' ');
+  const email = cleanEmail(req.body.email);
+  if (name.length < 2 || name.length > 60) return fail(res, 400, 'Name must be between 2 and 60 characters.');
+  if (!validEmail(email)) return fail(res, 400, 'Please enter a valid email address.');
+
+  const { data: duplicate } = await supabase.from('users').select('id').eq('email', email).neq('id', req.user.id).maybeSingle();
+  if (duplicate) return fail(res, 409, 'That email is already connected to another account.');
+
+  const { data: updatedUser, error } = await supabase.from('users').update({ name, email }).eq('id', req.user.id).select('id,email,name,phone').single();
+  if (error || !updatedUser) {
+    console.error(error);
+    return fail(res, 500, 'Could not update your profile.');
+  }
+
+  setSession(res, { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name || '', admin: false });
+  return res.json({ ok: true, user: updatedUser });
 });
 
 app.post('/api/admin/login', (req, res) => {
@@ -962,7 +982,7 @@ app.get('/api/orders', auth, async (req, res) => {
     .order('id', { ascending: false });
 
   if (!req.user.admin) {
-    query = query.eq('user_id', req.user.id);
+    query = query.or(`user_id.eq.${req.user.id},email.eq.${cleanEmail(req.user.email)}`);
   }
 
   const { data, error } = await query;
@@ -1010,10 +1030,12 @@ app.post('/api/reviews', auth, async (req, res) => {
     .eq('order_code', orderCodeValue)
     .maybeSingle();
 
-  const ownsOrder = order && (order.user_id === req.user.id || cleanEmail(order.email) === cleanEmail(req.user.email));
+  const currentEmail = cleanEmail(req.user.email);
+  const orderEmail = cleanEmail(order?.email);
+  const belongsToUser = Boolean(order) && (Number(order.user_id) === Number(req.user.id) || orderEmail === currentEmail);
 
-  if (!order || !ownsOrder || order.status !== 'DELIVERED') {
-    return fail(res, 403, 'Only your delivered orders can be reviewed.');
+  if (!order || !belongsToUser || order.status !== 'DELIVERED') {
+    return fail(res, 403, 'Only delivered orders belonging to your account can be reviewed.');
   }
 
   const { data: item } = await supabase
@@ -1045,6 +1067,7 @@ app.post('/api/reviews', auth, async (req, res) => {
       user_id: req.user.id,
       product_id: productId,
       email: req.user.email,
+      reviewer_name: req.user.name || '',
       stars,
       comment,
       approved: false
@@ -1390,10 +1413,44 @@ app.delete('/api/admin/coupons/:id', auth, adminOnly, async (req, res) => {
   return res.json({ ok: true });
 });
 
+app.post('/api/admin/reviews/fake', auth, adminOnly, async (req, res) => {
+  const name = String(req.body.name || '').trim().replace(/\s+/g, ' ').slice(0, 60);
+  const email = cleanEmail(req.body.email);
+  const productId = Number(req.body.product_id);
+  const stars = Math.max(1, Math.min(5, Number(req.body.stars || 5)));
+  const comment = String(req.body.comment || '').trim().slice(0, 500);
+
+  if (name.length < 2) return fail(res, 400, 'Reviewer name is required.');
+  if (!validEmail(email)) return fail(res, 400, 'A valid reviewer email is required.');
+  if (!Number.isInteger(productId) || productId <= 0) return fail(res, 400, 'Please select a product.');
+  if (!comment) return fail(res, 400, 'Review text is required.');
+
+  const { data: product } = await supabase.from('products').select('id').eq('id', productId).maybeSingle();
+  if (!product) return fail(res, 404, 'Product not found.');
+
+  const { data: review, error } = await supabase.from('reviews').insert({
+    order_id: null,
+    user_id: null,
+    product_id: productId,
+    email,
+    reviewer_name: name,
+    stars,
+    comment,
+    approved: true
+  }).select('*').single();
+
+  if (error) {
+    console.error(error);
+    return fail(res, 500, 'Could not create the review.');
+  }
+
+  return res.json({ ok: true, review });
+});
+
 app.get('/api/admin/reviews', auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase
     .from('reviews')
-    .select('id,email,stars,comment,approved,created_at,user_id,order_id,source,display_name,users(name),products(name)')
+    .select('id,email,stars,comment,approved,created_at,user_id,order_id,users(name),products(name)')
     .order('id', { ascending: false });
 
   if (error) {
@@ -1407,40 +1464,6 @@ app.get('/api/admin/reviews', auth, adminOnly, async (req, res) => {
       name: review.users?.name || 'Customer'
     }))
   );
-});
-
-app.post('/api/admin/reviews', auth, adminOnly, async (req, res) => {
-  const productId = Number(req.body.product_id);
-  const displayName = String(req.body.name || '').trim().slice(0, 80);
-  const email = cleanEmail(req.body.email);
-  const stars = Number(req.body.stars);
-  const comment = String(req.body.comment || '').trim().slice(0, 500);
-
-  if (!Number.isInteger(productId) || productId <= 0) return fail(res, 400, 'Choose a product.');
-  if (!displayName) return fail(res, 400, 'Name is required.');
-  if (!validEmail(email)) return fail(res, 400, 'Enter a valid email.');
-  if (!Number.isInteger(stars) || stars < 1 || stars > 5) return fail(res, 400, 'Stars must be between 1 and 5.');
-  if (!comment) return fail(res, 400, 'Review text cannot be empty.');
-
-  const { data: product } = await supabase.from('products').select('id').eq('id', productId).maybeSingle();
-  if (!product) return fail(res, 404, 'Product not found.');
-
-  const { data, error } = await supabase.from('reviews').insert({
-    product_id: productId,
-    email,
-    stars,
-    comment,
-    approved: true,
-    source: 'ADMIN',
-    display_name: displayName
-  }).select('id').single();
-
-  if (error) {
-    console.error(error);
-    return fail(res, 400, error.message);
-  }
-
-  return res.json({ ok: true, review: data, message: 'Staff testimonial created.' });
 });
 
 app.patch('/api/admin/reviews/:id', auth, adminOnly, async (req, res) => {
