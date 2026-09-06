@@ -1194,6 +1194,12 @@ app.get('/api/admin/overview', auth, adminOnly, async (req, res) => {
   });
 });
 
+function normalizeProductTags(input, fallback = 'FRESH') {
+  const raw = Array.isArray(input) ? input : (input ? [input] : [fallback]);
+  const tags = [...new Set(raw.map((tag) => String(tag || '').trim().toUpperCase()).map((tag) => tag === 'SPECIAL' ? 'DISCOUNT' : tag).filter((tag) => ['FRESH', 'HOT', 'DISCOUNT'].includes(tag)))];
+  return tags.length ? tags : [fallback];
+}
+
 app.get('/api/admin/products', auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase
     .from('products')
@@ -1213,13 +1219,14 @@ app.post('/api/admin/products', auth, adminOnly, async (req, res) => {
     description: String(req.body.description || '').trim(),
     price_bdt: Number(req.body.price_bdt || 0),
     image: String(req.body.image || '').trim(),
-    tag: String(req.body.tag || 'FRESH').toUpperCase(),
+    tags: normalizeProductTags(req.body.tags, 'FRESH'),
+    tag: normalizeProductTags(req.body.tags, 'FRESH')[0],
     delivery: String(req.body.delivery || 'Email delivery').trim(),
     file_url: String(req.body.file_url || '').trim(),
     active: req.body.active !== false
   };
 
-  if (!payload.name || !['FRESH', 'HOT', 'SPECIAL'].includes(payload.tag)) {
+  if (!payload.name || !payload.tags.length) {
     return fail(res, 400, 'Product name and valid tag are required.');
   }
 
@@ -1243,7 +1250,8 @@ app.put('/api/admin/products/:id', auth, adminOnly, async (req, res) => {
     description: String(req.body.description || '').trim(),
     price_bdt: Number(req.body.price_bdt || 0),
     image: String(req.body.image || '').trim(),
-    tag: String(req.body.tag || 'FRESH').toUpperCase(),
+    tags: normalizeProductTags(req.body.tags, 'FRESH'),
+    tag: normalizeProductTags(req.body.tags, 'FRESH')[0],
     delivery: String(req.body.delivery || 'Email delivery').trim(),
     file_url: String(req.body.file_url || '').trim(),
     active: Boolean(req.body.active)
