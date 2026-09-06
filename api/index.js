@@ -1,6 +1,8 @@
 require('dotenv').config();
 
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -674,6 +676,18 @@ app.put('/api/account/profile', auth, async (req, res) => {
 
   setSession(res, { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name || '', admin: false });
   return res.json({ ok: true, user: updatedUser });
+});
+
+app.get('/api/admin/script', auth, adminOnly, (req, res) => {
+  try {
+    const scriptPath = path.join(process.cwd(), 'private', 'admin.js');
+    const script = fs.readFileSync(scriptPath, 'utf8');
+    res.set('Cache-Control', 'private, no-store, max-age=0');
+    res.type('application/javascript').send(script);
+  } catch (error) {
+    console.error(error);
+    return fail(res, 500, 'Admin dashboard script unavailable.');
+  }
 });
 
 app.post('/api/admin/login', (req, res) => {
