@@ -76,11 +76,10 @@ create table if not exists public.reviews (
   user_id bigint references public.users(id) on delete set null,
   product_id bigint not null references public.products(id) on delete cascade,
   email text not null,
+  reviewer_name text,
   stars integer not null check (stars between 1 and 5),
   comment text not null default '',
   approved boolean not null default false,
-  source text not null default 'CUSTOMER',
-  display_name text default '',
   created_at timestamptz not null default now()
 );
 
@@ -91,9 +90,7 @@ alter table public.orders add column if not exists contact_value text not null d
 
 alter table public.reviews add column if not exists order_id bigint references public.orders(id) on delete cascade;
 alter table public.reviews add column if not exists user_id bigint references public.users(id) on delete set null;
-alter table public.reviews add column if not exists source text not null default 'CUSTOMER';
-alter table public.reviews add column if not exists display_name text default '';
-create index if not exists reviews_source_idx on public.reviews(source);
+alter table public.reviews add column if not exists reviewer_name text;
 create unique index if not exists reviews_order_product_unique on public.reviews(order_id, product_id) where order_id is not null;
 
 create table if not exists public.tickets (
@@ -136,7 +133,11 @@ insert into public.settings(key, value) values
   ('stat_sold_bonus', '20'),
   ('discord', 'https://discord.com/'),
   ('facebook', 'https://facebook.com/'),
-  ('email', 'support@fluxcord.store')
+  ('email', 'support@fluxcord.store'),
+  ('instagram', ''),
+  ('youtube', ''),
+  ('terms_url', '/terms.html'),
+  ('privacy_url', '/privacy.html')
 on conflict (key) do nothing;
 
 insert into public.products(name, description, price_bdt, image, tag, delivery, file_url)
