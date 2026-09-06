@@ -210,13 +210,13 @@ async function products() {
           Product File URL
           <input id="productFile" placeholder="https://.../ebook.pdf">
         </label>
-        <label>
-          Tag
-          <select id="productTag">
-            <option value="FRESH">✦ FRESH</option>
-            <option value="HOT">🔥 HOT</option>
-            <option value="SPECIAL">★ SPECIAL</option>
-          </select>
+        <label class="full">
+          Product Tags <span class="field-help">Select one or multiple tags.</span>
+          <div class="admin-tag-picker" id="productTags">
+            <label><input type="checkbox" value="FRESH"> <span>🆕 Fresh</span></label>
+            <label><input type="checkbox" value="HOT"> <span>🔥 Hot</span></label>
+            <label><input type="checkbox" value="DISCOUNT"> <span>💸 Discount</span></label>
+          </div>
         </label>
         <label>
           Delivery
@@ -256,7 +256,7 @@ async function products() {
                   <small>${escapeHtml(row.description)}</small>
                 </td>
                 <td>${money(row.price_bdt)}</td>
-                <td>${escapeHtml(row.tag)}</td>
+                <td>${escapeHtml((Array.isArray(row.tags) && row.tags.length ? row.tags : [row.tag || 'FRESH']).map((tag) => String(tag).toUpperCase() === 'SPECIAL' ? 'DISCOUNT' : String(tag).toUpperCase()).join(', '))}</td>
                 <td>${row.active ? 'ACTIVE' : 'HIDDEN'}</td>
                 <td>
                   <button class="btn secondary" data-edit-product="${row.id}">Edit</button>
@@ -280,7 +280,7 @@ async function products() {
       price_bdt: Number($('#productPrice').value),
       image: $('#productImage').value.trim(),
       file_url: $('#productFile').value.trim(),
-      tag: $('#productTag').value,
+      tags: [...document.querySelectorAll('#productTags input:checked')].map((input) => input.value),
       delivery: $('#productDelivery').value.trim(),
       active: $('#productActive').checked
     };
@@ -313,7 +313,9 @@ async function products() {
       $('#productPrice').value = row.price_bdt;
       $('#productImage').value = row.image;
       $('#productFile').value = row.file_url;
-      $('#productTag').value = row.tag;
+      const existingTags = Array.isArray(row.tags) && row.tags.length ? row.tags : [row.tag || 'FRESH'];
+      const normalizedTags = existingTags.map((tag) => String(tag).toUpperCase() === 'SPECIAL' ? 'DISCOUNT' : String(tag).toUpperCase());
+      document.querySelectorAll('#productTags input').forEach((input) => { input.checked = normalizedTags.includes(input.value); });
       $('#productDelivery').value = row.delivery;
       $('#productActive').checked = row.active;
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -342,7 +344,7 @@ function resetProductForm() {
   $('#productPrice').value = '';
   $('#productImage').value = '';
   $('#productFile').value = '';
-  $('#productTag').value = 'FRESH';
+  document.querySelectorAll('#productTags input').forEach((input) => { input.checked = input.value === 'FRESH'; });
   $('#productDelivery').value = 'Email delivery';
   $('#productActive').checked = true;
 }
