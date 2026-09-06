@@ -71,7 +71,12 @@ async function api(url, options = {}) {
 }
 
 function renderHero() {
-  const title = state.settings.hero_title || '⚡ FluxCord';
+  const storeName = state.settings.store_name || 'FluxCord';
+  document.querySelectorAll('[data-store-name]').forEach((el) => { el.textContent = storeName; });
+  document.querySelectorAll('[data-store-tagline]').forEach((el) => { el.textContent = state.settings.tagline || ''; });
+  document.title = `${storeName} — Premium Digital Store`;
+
+  const title = state.settings.hero_title || `⚡ ${storeName}`;
   const titleLines = title.split('\n');
 
   $('#heroTitle').innerHTML = titleLines
@@ -84,6 +89,8 @@ function renderHero() {
 
   $('#discordLink').href = state.settings.discord || '#';
   $('#facebookLink').href = state.settings.facebook || '#';
+  $('#instagramLink').href = state.settings.instagram || '#';
+  $('#youtubeLink').href = state.settings.youtube || '#';
   $('#emailLink').href = `mailto:${state.settings.email || 'support@fluxcord.store'}`;
 }
 
@@ -526,7 +533,7 @@ async function accountModal() {
       <div class="info-box account-profile">
         <strong>${escapeHtml(state.currentUser?.name || 'Your name')}</strong><br>
         <small class="muted">${escapeHtml(state.currentUser?.email || '')}</small>
-        <button class="secondary-button small-button" id="editNameButton" style="margin-top:12px">Edit Name</button>
+        <button class="secondary-button small-button" id="editProfileButton" style="margin-top:12px">Edit Profile</button>
       </div>
       <h3>My Orders</h3>
       <p class="muted">Track your orders and open support tickets.</p>
@@ -570,8 +577,25 @@ async function accountModal() {
       </button>
     `);
 
-    $('#editNameButton').addEventListener('click', async () => {
-      await requiredNameModal();
+    $('#editProfileButton').addEventListener('click', async () => {
+      openModal(`
+        <h2>Edit Profile</h2>
+        <p class="muted">Update your name and email whenever you need.</p>
+        <form class="form" id="profileForm">
+          <label>Name<input id="profileName" maxlength="60" value="${escapeHtml(state.currentUser?.name || '')}" required></label>
+          <label>Email<input id="profileEmail" type="email" value="${escapeHtml(state.currentUser?.email || '')}" required></label>
+          <button class="primary-button" type="submit">Save Profile →</button>
+        </form>`);
+      $('#profileForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        try {
+          const result = await api('/api/account/profile', { method: 'PUT', body: JSON.stringify({ name: $('#profileName').value.trim(), email: $('#profileEmail').value.trim() }) });
+          state.currentUser = result.user;
+          closeModal();
+          toast('Profile updated successfully.');
+          await accountModal();
+        } catch (error) { toast(error.message); }
+      });
     });
 
     document.querySelectorAll('[data-view-order]').forEach((button) => {
@@ -812,7 +836,7 @@ async function renderReviews() {
               <article class="review-card">
                 <div class="review-stars">${'★'.repeat(Number(review.stars || 0))}${'☆'.repeat(5 - Number(review.stars || 0))}</div>
                 <p>${escapeHtml(review.comment || 'Great product.')}</p>
-                <span class="review-author">${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}${review.source === 'ADMIN' ? ' · Staff testimonial' : ''}</span>
+                <span class="review-author">${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}</span>
               </article>
             `).join('')}
           </div>
