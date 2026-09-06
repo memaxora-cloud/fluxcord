@@ -812,7 +812,7 @@ async function renderReviews() {
               <article class="review-card">
                 <div class="review-stars">${'★'.repeat(Number(review.stars || 0))}${'☆'.repeat(5 - Number(review.stars || 0))}</div>
                 <p>${escapeHtml(review.comment || 'Great product.')}</p>
-                <span class="review-author">${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}</span>
+                <span class="review-author">${escapeHtml(review.name || 'Customer')} · ${escapeHtml(review.product_name)}${review.source === 'ADMIN' ? ' · Staff testimonial' : ''}</span>
               </article>
             `).join('')}
           </div>
