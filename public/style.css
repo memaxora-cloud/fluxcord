@@ -28,7 +28,7 @@ body {
     radial-gradient(circle at 78% 15%, rgba(118, 41, 255, 0.09), transparent 28%),
     radial-gradient(circle at 20% 40%, rgba(43, 90, 255, 0.05), transparent 24%),
     var(--bg);
-  font-family: Inter, "Noto Sans Bengali", system-ui, sans-serif;
+  font-family: "Russo One", sans-serif;
   overflow-x: hidden;
 }
 
@@ -1357,8 +1357,8 @@ button {
 @media(max-width:620px){.navbar{margin-top:8px}.nav-actions .text-button{display:none}.container{width:min(100% - 24px,1160px)}.hero{padding-top:45px}.hero h1{font-size:54px}.hero-visual{min-height:260px}.hero-orb-ring{width:230px;height:230px}.hero-orb-glow{width:220px;height:220px}.hero-logo{width:110px;height:110px}.stats{grid-template-columns:1fr}.product-grid{grid-template-columns:1fr}.section{padding:70px 0}.checkout-main-card,.payment-success-card{padding:22px}.contact-grid{grid-template-columns:1fr}.checkout-top{flex-wrap:wrap}.checkout-id{margin-left:0}.review-grid{width:calc(100% + 24px);margin-left:-12px}.review-card{width:260px;flex-basis:260px}}
 \n\n/* FluxCord Premium Clean Typography + Floating Hero Logo */
 :root {
-  --fc-display: 'Outfit', 'Inter', system-ui, sans-serif;
-  --fc-serif: 'Outfit', 'Inter', system-ui, sans-serif;
+  --fc-display: 'Russo One', sans-serif;
+  --fc-serif: 'Russo One', sans-serif;
 }
 
 body, button, input, textarea, select {
@@ -1425,4 +1425,12 @@ input::placeholder, textarea::placeholder { font-family: var(--fc-display); font
   .hero-orb-ring { width:310px; height:310px; }
   .hero-orb-glow { width:270px; height:270px; }
   .legal-card { padding:26px 20px; border-radius:22px; }
+}
+
+
+/* FluxCord typography */
+.russo-one-regular {
+  font-family: "Russo One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
