@@ -28,7 +28,7 @@ body {
     radial-gradient(circle at 78% 15%, rgba(118, 41, 255, 0.09), transparent 28%),
     radial-gradient(circle at 20% 40%, rgba(43, 90, 255, 0.05), transparent 24%),
     var(--bg);
-  font-family: "Russo One", sans-serif;
+  font-family: "Nunito", sans-serif;
   overflow-x: hidden;
 }
 
@@ -1357,8 +1357,8 @@ button {
 @media(max-width:620px){.navbar{margin-top:8px}.nav-actions .text-button{display:none}.container{width:min(100% - 24px,1160px)}.hero{padding-top:45px}.hero h1{font-size:54px}.hero-visual{min-height:260px}.hero-orb-ring{width:230px;height:230px}.hero-orb-glow{width:220px;height:220px}.hero-logo{width:110px;height:110px}.stats{grid-template-columns:1fr}.product-grid{grid-template-columns:1fr}.section{padding:70px 0}.checkout-main-card,.payment-success-card{padding:22px}.contact-grid{grid-template-columns:1fr}.checkout-top{flex-wrap:wrap}.checkout-id{margin-left:0}.review-grid{width:calc(100% + 24px);margin-left:-12px}.review-card{width:260px;flex-basis:260px}}
 \n\n/* FluxCord Premium Clean Typography + Floating Hero Logo */
 :root {
-  --fc-display: 'Russo One', sans-serif;
-  --fc-serif: 'Russo One', sans-serif;
+  --fc-display: 'Nunito', sans-serif;
+  --fc-serif: 'Nunito', sans-serif;
 }
 
 body, button, input, textarea, select {
@@ -1430,7 +1430,7 @@ input::placeholder, textarea::placeholder { font-family: var(--fc-display); font
 
 /* FluxCord typography */
 .russo-one-regular {
-  font-family: "Russo One", sans-serif;
+  font-family: "Nunito", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
@@ -1483,7 +1483,7 @@ input::placeholder, textarea::placeholder { font-family: var(--fc-display); font
 .footer-main { min-width:0; }
 .footer-brand { display:inline-flex; align-items:center; gap:10px; color:#15151a; font-size:20px; font-weight:700; letter-spacing:-.03em; text-decoration:none; }
 .footer-brand img { width:26px; height:26px; object-fit:contain; border-radius:7px; }
-.footer-description { max-width:430px; margin:18px 0 24px; color:#6f6f78; font-family:"Russo One",sans-serif; font-size:12px; line-height:1.7; }
+.footer-description { max-width:430px; margin:18px 0 24px; color:#6f6f78; font-family:"Nunito",sans-serif; font-size:12px; line-height:1.7; }
 .footer-socials { display:flex; align-items:center; gap:14px; }
 .footer-socials a { display:grid; place-items:center; width:26px; height:26px; color:#19191e; text-decoration:none; transition:transform .18s ease, opacity .18s ease; }
 .footer-socials a:hover { transform:translateY(-2px); opacity:.62; }
@@ -1491,11 +1491,11 @@ input::placeholder, textarea::placeholder { font-family: var(--fc-display); font
 .footer-socials svg .icon-fill { fill:currentColor; stroke:none; }
 .footer-socials a:nth-child(3) svg, .footer-socials a:nth-child(4) svg { fill:currentColor; stroke:none; }
 .footer-column { display:flex; flex-direction:column; gap:15px; }
-.footer-column h3 { margin:0 0 8px; color:#111116; font-family:"Russo One",sans-serif; font-size:13px; font-weight:400; }
-.footer-column a { color:#66666f; font-family:"Russo One",sans-serif; font-size:11px; line-height:1.55; text-decoration:none; transition:color .18s ease; }
+.footer-column h3 { margin:0 0 8px; color:#111116; font-family:"Nunito",sans-serif; font-size:13px; font-weight:400; }
+.footer-column a { color:#66666f; font-family:"Nunito",sans-serif; font-size:11px; line-height:1.55; text-decoration:none; transition:color .18s ease; }
 .footer-column a:hover { color:#111116; }
 .footer-column a span { margin-left:5px; }
-.footer-bottom { border-top:1px solid #e8e8eb; padding:22px 0 25px; color:#777780; font-family:"Russo One",sans-serif; font-size:10px; }
+.footer-bottom { border-top:1px solid #e8e8eb; padding:22px 0 25px; color:#777780; font-family:"Nunito",sans-serif; font-size:10px; }
 .footer-bottom b { color:#44444b; font-weight:400; }
 @media (max-width: 760px) {
   .footer-inner { grid-template-columns:1fr 1fr; gap:38px 28px; }
@@ -1505,3 +1505,45 @@ input::placeholder, textarea::placeholder { font-family: var(--fc-display); font
   .footer-inner { grid-template-columns:1fr; }
   .footer-main { grid-column:auto; }
 }
+
+
+/* Nunito storefront refresh */
+body, button, input, textarea, select { font-family: "Nunito", sans-serif; }
+
+/* Compact black footer */
+.footer { margin-top: 56px; background: #050505; color: #f5f5f5; border-top: 1px solid rgba(255,255,255,.08); }
+.footer-inner { padding: 30px 0 24px; grid-template-columns: minmax(0,1fr) 150px 170px; gap: 46px; }
+.footer-brand { color:#fff; font-size:18px; font-weight:800; }
+.footer-brand img { width:24px; height:24px; }
+.footer-description { max-width:390px; margin:10px 0 16px; color:#8d8d96; font-family:"Nunito",sans-serif; font-size:12px; line-height:1.6; }
+.footer-socials { gap:9px; }
+.footer-socials a { width:24px; height:24px; color:#d8d8dc; }
+.footer-socials svg { width:16px; height:16px; }
+.footer-column { gap:8px; }
+.footer-column h3 { color:#fff; font-family:"Nunito",sans-serif; font-size:12px; font-weight:800; margin-bottom:4px; }
+.footer-column a { color:#8d8d96; font-family:"Nunito",sans-serif; font-size:11px; }
+.footer-column a:hover { color:#fff; }
+.footer-bottom { padding:14px 0 17px; border-top:1px solid rgba(255,255,255,.08); color:#707078; font-family:"Nunito",sans-serif; font-size:10px; }
+.footer-bottom b { color:#aaaab1; }
+.reviews-heading-row { display:flex; align-items:end; justify-content:space-between; gap:20px; }
+.reviews-all-button { white-space:nowrap; }
+.page-shell { padding-top:32px; padding-bottom:80px; }
+.page-brand { margin-bottom:28px; }
+.page-brand img { width:32px; height:32px; }
+.reviews-page h1, .profile-hero h1 { font-size:clamp(42px,7vw,76px); line-height:1; margin:12px 0 10px; letter-spacing:-.045em; }
+.all-reviews-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:30px; }
+.review-full-card { padding:22px; border:1px solid var(--border); border-radius:18px; background:rgba(255,255,255,.035); }
+.review-full-card p { color:var(--muted); line-height:1.7; min-height:72px; }
+.review-full-card strong, .review-full-card span { display:block; }
+.review-full-card span { margin-top:4px; color:var(--muted); font-size:12px; }
+.profile-hero { padding:36px 0 18px; }
+.profile-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:18px 0 36px; }
+.profile-order { padding:20px; border:1px solid var(--border); border-radius:18px; background:rgba(255,255,255,.035); margin:12px 0; }
+.profile-order-head { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; }
+.profile-order-head div span { display:block; margin-top:5px; color:var(--muted); font-size:12px; }
+.profile-items { margin:18px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.profile-items > div { display:flex; justify-content:space-between; gap:15px; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+.profile-items > div:last-child { border-bottom:0; }
+.review-done { color:#71e6a8; font-size:12px; font-weight:800; }
+@media(max-width:850px){.all-reviews-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.footer-inner{grid-template-columns:1fr 1fr 1fr;gap:25px;}}
+@media(max-width:620px){.all-reviews-grid,.profile-stats{grid-template-columns:1fr;}.reviews-heading-row{align-items:flex-start;flex-direction:column;}.footer-inner{grid-template-columns:1fr 1fr;}.footer-main{grid-column:1/-1;}.profile-order-head,.profile-items>div{flex-direction:column;align-items:flex-start;}.page-shell{padding-top:20px;}}
