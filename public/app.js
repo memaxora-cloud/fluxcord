@@ -71,27 +71,16 @@ async function api(url, options = {}) {
 }
 
 function renderHero() {
-  const storeName = state.settings.store_name || 'FluxCord';
-  document.querySelectorAll('[data-store-name]').forEach((el) => { el.textContent = storeName; });
-  document.querySelectorAll('[data-store-tagline]').forEach((el) => { el.textContent = state.settings.tagline || ''; });
-  document.title = `${storeName} — Premium Digital Store`;
+  document.title = 'FluxCord — Premium Digital Store';
+  document.querySelectorAll('[data-store-name]').forEach((el) => { el.textContent = 'FluxCord'; });
+  $('#heroTitle').innerHTML = '<span class="hero-flux">FluxCord</span>';
+  $('#heroDescription').textContent = 'Premium digital resources for students, creators and digital entrepreneurs.';
 
-  const title = state.settings.hero_title || storeName;
-  const titleLines = title.split('\n');
-
-  $('#heroTitle').innerHTML = titleLines
-    .map((line, index) => index === titleLines.length - 1
-      ? `<span>${escapeHtml(line)}</span>`
-      : escapeHtml(line))
-    .join('<br>');
-
-  $('#heroDescription').textContent = state.settings.hero_description || '';
-
+  const email = state.settings.email || 'support@fluxcord.store';
   $('#discordLink').href = state.settings.discord || '#';
   $('#facebookLink').href = state.settings.facebook || '#';
   $('#instagramLink').href = state.settings.instagram || '#';
   $('#youtubeLink').href = state.settings.youtube || '#';
-  const email = state.settings.email || 'support@fluxcord.store';
   $('#emailLink').href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`;
   $('#emailLink').target = '_blank';
   $('#emailLink').rel = 'noopener';
@@ -540,116 +529,20 @@ async function renderCheckoutPortal() {
 }
 
 function renderCheckoutSuccess(order) {
-  const portal=$('#checkoutPortal'); portal.innerHTML=`<div class="checkout-shell container checkout-success-shell"><div class="payment-success-card"><div class="success-orb">✓</div><span class="section-label">PAYMENT UNDER REQUEST</span><h1>Payment Under Request!</h1><p>Please wait till our mod team checks the payment and delivers your product. You will receive your product via your mail <strong>${escapeHtml(state.currentUser.email)}</strong>.</p><div class="order-status-pill">Order ${escapeHtml(order.order_code)} · PENDING</div><div class="checkout-product-list"><strong>Your Products</strong>${order.items?.map(item=>`<div>${escapeHtml(item.name)} × ${item.quantity}</div>`).join('') || '<div>Your purchased products are linked to this order.</div>'}</div><button class="primary-button" id="successAccount">View My Orders →</button></div></div>`; $('#successAccount').onclick=accountModal; }
+  const portal=$('#checkoutPortal'); portal.innerHTML=`<div class="checkout-shell container checkout-success-shell"><div class="payment-success-card"><div class="success-orb">✓</div><span class="section-label">PAYMENT UNDER REQUEST</span><h1>Payment Under Request!</h1><p>Please wait till our mod team checks the payment and delivers your product. You will receive your product via your mail <strong>${escapeHtml(state.currentUser.email)}</strong>.</p><div class="order-status-pill">Order ${escapeHtml(order.order_code)} · PENDING</div><div class="checkout-product-list"><strong>Your Products</strong>${order.items?.map(item=>`<div>${escapeHtml(item.name)} × ${item.quantity}</div>`).join('') || '<div>Your purchased products are linked to this order.</div>'}</div><button class="primary-button" id="successAccount">View My Orders →</button></div></div>`; $('#successAccount').onclick=openAccountPage; }
 
-async function accountModal() {
-  try {
-    const orders = await api('/api/orders');
-
-    openModal(`
-      <h2>My Account</h2>
-      <div class="info-box account-profile">
-        <strong>${escapeHtml(state.currentUser?.name || 'Your name')}</strong><br>
-        <small class="muted">${escapeHtml(state.currentUser?.email || '')}</small>
-        <button class="secondary-button small-button" id="editProfileButton" style="margin-top:12px">Edit Profile</button>
-      </div>
-      <h3>My Orders</h3>
-      <p class="muted">Track your orders and open support tickets.</p>
-      ${orders.some((order) => ticketForOrder(order)?.status === 'OPEN') ? `
-        <div class="ticket-live-panel">
-          <div class="ticket-live-icon">✦</div>
-          <div>
-            <strong>Support ticket is open</strong>
-            <span>FluxCord support is ready. Open your order to continue the chat.</span>
-          </div>
-        </div>
-      ` : ''}
-      <div>
-        ${orders.length
-          ? orders.map((order) => `
-            <div class="cart-row">
-              <span>
-                <strong>${escapeHtml(order.order_code || orderCodeFallback(order.id))}</strong><br>
-                <small>${escapeHtml(order.payment_method)} · ${escapeHtml(order.status)}</small>
-              </span>
-              <strong>${money(order.total)}</strong>
-              <button class="secondary-button small-button" data-view-order="${order.id}">
-                View
-              </button>
-              ${ticketForOrder(order)?.status === 'OPEN' ? `
-                <button class="ticket-alert-box" data-view-order="${order.id}">
-                  <span class="ticket-glow-dot"></span> Support ticket open — View chat →
-                </button>
-              ` : ''}
-              ${order.status === 'DELIVERED' ? (order.order_items || []).map((item) => `
-                <button class="secondary-button small-button" data-review-order="${order.id}" data-review-product="${item.product_id}">
-                  ⭐ Review
-                </button>
-              `).join('') : ''}
-            </div>
-          `).join('')
-          : '<div class="empty-state">No orders yet.</div>'}
-      </div>
-      <button class="outline-button" id="logoutButton" style="margin-top:15px;width:100%">
-        Logout
-      </button>
-    `);
-
-    $('#editProfileButton').addEventListener('click', async () => {
-      openModal(`
-        <h2>Edit Profile</h2>
-        <p class="muted">Update your name and email whenever you need.</p>
-        <form class="form" id="profileForm">
-          <label>Name<input id="profileName" maxlength="60" value="${escapeHtml(state.currentUser?.name || '')}" required></label>
-          <label>Email<input id="profileEmail" type="email" value="${escapeHtml(state.currentUser?.email || '')}" required></label>
-          <button class="primary-button" type="submit">Save Profile →</button>
-        </form>`);
-      $('#profileForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-        try {
-          const result = await api('/api/account/profile', { method: 'PUT', body: JSON.stringify({ name: $('#profileName').value.trim(), email: $('#profileEmail').value.trim() }) });
-          state.currentUser = result.user;
-          closeModal();
-          toast('Profile updated successfully.');
-          await accountModal();
-        } catch (error) { toast(error.message); }
-      });
-    });
-
-    document.querySelectorAll('[data-view-order]').forEach((button) => {
-      button.addEventListener('click', () => {
-        const order = orders.find((row) => row.id === Number(button.dataset.viewOrder));
-        if (order) {
-          orderDetailModal(order);
-        }
-      });
-    });
-
-    document.querySelectorAll('[data-review-order]').forEach((button) => {
-      button.addEventListener('click', () => {
-        const order = orders.find((row) => row.id === Number(button.dataset.reviewOrder));
-        const item = order?.order_items?.find((row) => row.product_id === Number(button.dataset.reviewProduct));
-        if (order && item) {
-          reviewModal(order, item);
-        }
-      });
-    });
-
-    $('#logoutButton').addEventListener('click', async () => {
-      await api('/api/auth/logout', { method: 'POST' });
-      window.location.reload();
-    });
-  } catch (error) {
-    toast(error.message);
-  }
+function usernameSlug(name) {
+  const slug = String(name || 'user').trim().toLowerCase()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || 'user';
 }
 
-function orderCodeFallback(id) {
-  return `#${String(id).padStart(3, '0')}`;
-}
-
-function ticketForOrder(order) {
-  return Array.isArray(order?.tickets) ? order.tickets.find((ticket) => ticket.status === 'OPEN') || order.tickets[0] : null;
+function openAccountPage() {
+  if (!state.currentUser) return;
+  const username = usernameSlug(state.currentUser.name || 'user');
+  window.open(`/users/${encodeURIComponent(username)}`, '_blank', 'noopener');
 }
 
 function reviewModal(order, item) {
@@ -883,20 +776,6 @@ async function renderLeaderboard() {
     : '<div class="empty-state">Leaderboard will appear after the first verified paid orders.</div>';
 }
 
-async function openReviewFromUrl() {
-  const reviewCode = new URLSearchParams(window.location.search).get('review');
-  if (!reviewCode || !state.currentUser) return;
-
-  try {
-    const orders = await api('/api/orders');
-    const order = orders.find((row) => (row.order_code || '').toUpperCase() === reviewCode.toUpperCase());
-    if (order?.status === 'DELIVERED' && order.order_items?.length) {
-      reviewModal(order, order.order_items[0]);
-    }
-  } catch (error) {
-    console.error('Review link error:', error);
-  }
-}
 
 async function init() {
   try {
@@ -936,7 +815,7 @@ async function init() {
 
 $('#cartButton').addEventListener('click', renderCart);
 $('#loginButton').addEventListener('click', () => loginModal('login'));
-$('#accountButton').addEventListener('click', accountModal);
+$('#accountButton').addEventListener('click', openAccountPage);
 $('#trackButton').addEventListener('click', () => trackOrderModal());
 $('#modalClose').addEventListener('click', closeModal);
 
