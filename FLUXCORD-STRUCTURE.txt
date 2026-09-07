@@ -1,0 +1,33 @@
+FLUXCORD A-Z STRUCTURE
+
+api/
+  index.js
+
+private/
+  admin.js
+
+public/
+  index.html
+  style.css
+  app.js
+  admin.html
+  admin.css
+  user.html
+  reviews.html
+  terms.html
+  privacy.html
+  logo.png
+
+supabase/
+  schema.sql
+
+root files
+  .gitignore
+  README.md
+  SETUP-CHECKLIST.txt
+  FLUXCORD-STRUCTURE.txt
+  package.json
+  vercel.json
+
+DO NOT ADD
+  public/admin.js
