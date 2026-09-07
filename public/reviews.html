@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index, follow">
+  <title>FluxCord — All Reviews</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="page-shell container">
+    <a class="brand page-brand" href="/" aria-label="FluxCord home">
+      <img src="/logo.png" alt="FluxCord logo">
+      <span>FluxCord</span>
+    </a>
+
+    <section class="section reviews-page">
+      <span class="section-label">REVIEWS</span>
+      <h1>All Reviews</h1>
+      <p class="muted">Customer feedback, sorted A–Z.</p>
+      <div id="allReviews" class="all-reviews-grid">
+        <div class="empty-state">Loading reviews…</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[character]));
+
+    async function loadReviews() {
+      const container = document.querySelector('#allReviews');
+
+      try {
+        const response = await fetch('/api/reviews/all');
+        const reviews = await response.json();
+
+        if (!Array.isArray(reviews) || !reviews.length) {
+          container.innerHTML = '<div class="empty-state">No reviews yet.</div>';
+          return;
+        }
+
+        container.innerHTML = reviews.map((review) => `
+          <article class="review-full-card">
+            <div class="review-stars">
+              ${'★'.repeat(review.stars)}${'☆'.repeat(5 - review.stars)}
+            </div>
+            <p>${esc(review.comment)}</p>
+            <strong>${esc(review.name)}</strong>
+            <span>${esc(review.product_name)}</span>
+          </article>
+        `).join('');
+      } catch {
+        container.innerHTML = `
+          <div class="empty-state">Reviews are temporarily unavailable.</div>
+        `;
+      }
+    }
+
+    loadReviews();
+  </script>
+</body>
+</html>

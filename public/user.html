@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>FluxCord — Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="page-shell container">
+    <a class="brand page-brand" href="/" aria-label="FluxCord home">
+      <img src="/logo.png" alt="FluxCord logo">
+      <span>FluxCord</span>
+    </a>
+
+    <div id="profilePage">
+      <div class="empty-state">Loading your account…</div>
+    </div>
+  </main>
+
+  <div class="modal hidden" id="reviewModal" aria-hidden="true">
+    <div class="modal-backdrop" id="closeReview"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+      <button class="modal-close" id="closeReviewButton" aria-label="Close">×</button>
+      <div id="reviewContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[character]));
+
+    const money = (value) => `৳${Number(value || 0).toLocaleString('en-BD')}`;
+
+    async function api(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        }
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong.');
+      }
+
+      return data;
+    }
+
+    const username = decodeURIComponent(
+      location.pathname.split('/').filter(Boolean).pop() || ''
+    );
+
+    let profile = null;
+
+    function closeReviewModal() {
+      const modal = document.querySelector('#reviewModal');
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openReview(order, item) {
+      let stars = 5;
+      const modal = document.querySelector('#reviewModal');
+
+      document.querySelector('#reviewContent').innerHTML = `
+        <h2 id="reviewTitle">Leave a Review</h2>
+        <p class="muted">${esc(item.name)} · ${esc(order.order_code)}</p>
+
+        <form class="form" id="reviewForm">
+          <label>
+            Rating
+            <div class="review-rating-picker" id="reviewStars">
+              ${[1, 2, 3, 4, 5].map((number) => `
+                <button
+                  type="button"
+                  class="star-button active"
+                  data-star="${number}"
+                  aria-label="${number} star${number === 1 ? '' : 's'}"
+                >★</button>
+              `).join('')}
+            </div>
+          </label>
+
+          <label for="reviewText">
+            Your review
+            <textarea
+              id="reviewText"
+              maxlength="500"
+              required
+              placeholder="Tell us what you thought…"
+            ></textarea>
+          </label>
+
+          <button class="primary-button" type="submit">Submit Review →</button>
+        </form>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+
+      document.querySelectorAll('[data-star]').forEach((button) => {
+        button.addEventListener('click', () => {
+          stars = Number(button.dataset.star);
+          document.querySelectorAll('[data-star]').forEach((starButton) => {
+            starButton.classList.toggle(
+              'active',
+              Number(starButton.dataset.star) <= stars
+            );
+          });
+        });
+      });
+
+      document.querySelector('#reviewForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const submitButton = event.submitter;
+        submitButton.disabled = true;
+
+        try {
+          await api('/api/reviews', {
+            method: 'POST',
+            body: JSON.stringify({
+              order_code: order.order_code,
+              product_id: item.product_id,
+              stars,
+              comment: document.querySelector('#reviewText').value.trim()
+            })
+          });
+
+          closeReviewModal();
+          await load();
+        } catch (error) {
+          submitButton.disabled = false;
+          alert(error.message);
+        }
+      });
+    }
+
+    function renderProfile() {
+      const user = profile.user;
+
+      document.title = `FluxCord — ${user.name}`;
+
+      document.querySelector('#profilePage').innerHTML = `
+        <section class="profile-hero">
+          <span class="section-label">ACCOUNT</span>
+          <h1>${esc(user.name)}</h1>
+          <p class="muted">${esc(user.email)}</p>
+        </section>
+
+        <section class="profile-stats" aria-label="Account statistics">
+          <div class="stat-card">
+            <span>Total Spend</span>
+            <strong>${money(profile.stats.total_spend)}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Transactions</span>
+            <strong>${profile.stats.order_count}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Last Purchase</span>
+            <strong>
+              ${profile.stats.last_purchase
+                ? new Date(profile.stats.last_purchase).toLocaleDateString()
+                : '—'}
+            </strong>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-heading">
+            <div>
+              <span class="section-label">TRANSACTIONS</span>
+              <h2>Past Transactions</h2>
+            </div>
+          </div>
+
+          <div class="profile-orders">
+            ${profile.orders.length
+              ? profile.orders.map((order) => `
+                <article class="profile-order">
+                  <div class="profile-order-head">
+                    <div>
+                      <strong>${esc(order.order_code)}</strong>
+                      <span>
+                        ${new Date(order.created_at).toLocaleString()} ·
+                        ${esc(order.status)}
+                      </span>
+                    </div>
+                    <strong>${money(order.total)}</strong>
+                  </div>
+
+                  <div class="profile-items">
+                    ${(order.order_items || []).map((item) => `
+                      <div>
+                        <span>${esc(item.name)} × ${item.quantity}</span>
+                        ${order.status === 'DELIVERED'
+                          ? item.reviewed
+                            ? '<span class="review-done">Review done ✓</span>'
+                            : `<button
+                                class="secondary-button small-button review-profile-button"
+                                data-order="${order.id}"
+                                data-product="${item.product_id}"
+                              >Review</button>`
+                          : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+
+                  <small class="muted">
+                    Payment: ${esc(order.payment_method)} ·
+                    Transaction: ${esc(order.trxid || '—')}
+                  </small>
+                </article>
+              `).join('')
+              : '<div class="empty-state">No transactions yet.</div>'}
+          </div>
+        </section>
+      `;
+
+      document.querySelectorAll('.review-profile-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          const order = profile.orders.find(
+            (entry) => entry.id === Number(button.dataset.order)
+          );
+          const item = order?.order_items?.find(
+            (entry) => entry.product_id === Number(button.dataset.product)
+          );
+
+          if (order && item) openReview(order, item);
+        });
+      });
+    }
+
+    async function load() {
+      try {
+        profile = await api(
+          `/api/account/profile-page?username=${encodeURIComponent(username)}`
+        );
+        renderProfile();
+      } catch (error) {
+        document.querySelector('#profilePage').innerHTML = `
+          <div class="empty-state">
+            ${esc(error.message)}
+            <br><br>
+            <a class="primary-button" href="/">Return to FluxCord</a>
+          </div>
+        `;
+      }
+    }
+
+    document.querySelector('#closeReview').addEventListener('click', closeReviewModal);
+    document.querySelector('#closeReviewButton').addEventListener('click', closeReviewModal);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeReviewModal();
+    });
+
+    load();
+  </script>
+</body>
+</html>
