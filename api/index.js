@@ -34,10 +34,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const defaultSettings = {
-  store_name: 'FluxCord',
-  tagline: 'Premium digital knowledge, delivered with care.',
-  hero_title: 'Learn faster.\nBuild smarter.',
-  hero_description: 'Premium e-books for students, creators and digital entrepreneurs.',
   stat_customer_bonus: '10',
   stat_sold_bonus: '20',
   discord: 'https://discord.com/',
@@ -65,6 +61,14 @@ function cleanEmail(value) {
 
 function validEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function usernameSlug(name) {
+  const slug = String(name || 'user').trim().toLowerCase()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return slug || 'user';
 }
 
 function hash(value) {
@@ -432,6 +436,32 @@ app.get('/api/reviews', async (req, res) => {
     product_name: productMap.get(Number(review.product_id)) || 'Product',
     name: review.reviewer_name || userMap.get(Number(review.user_id)) || 'Customer',
     email: review.email || ''
+  })));
+});
+
+app.get('/api/reviews/all', async (req, res) => {
+  const { data: reviews, error } = await supabase
+    .from('reviews')
+    .select('id,user_id,email,reviewer_name,product_id,stars,comment,created_at')
+    .eq('approved', true)
+    .order('reviewer_name', { ascending: true })
+    .order('id', { ascending: true });
+
+  if (error) return fail(res, 500, 'Could not load reviews.');
+
+  const productIds = [...new Set((reviews || []).map((r) => Number(r.product_id)).filter(Boolean))];
+  const userIds = [...new Set((reviews || []).map((r) => Number(r.user_id)).filter(Boolean))];
+  const [{ data: products }, { data: users }] = await Promise.all([
+    productIds.length ? supabase.from('products').select('id,name').in('id', productIds) : Promise.resolve({ data: [] }),
+    userIds.length ? supabase.from('users').select('id,name').in('id', userIds) : Promise.resolve({ data: [] })
+  ]);
+  const productMap = new Map((products || []).map((p) => [Number(p.id), p.name]));
+  const userMap = new Map((users || []).map((u) => [Number(u.id), u.name]));
+
+  return res.json((reviews || []).map((review) => ({
+    id: review.id, stars: Number(review.stars || 0), comment: review.comment || '', created_at: review.created_at,
+    product_name: productMap.get(Number(review.product_id)) || 'Product',
+    name: review.reviewer_name || userMap.get(Number(review.user_id)) || 'Customer'
   })));
 });
 
@@ -972,7 +1002,7 @@ app.post('/api/orders', auth, async (req, res) => {
     text: `Your FluxCord order ${code} has been received. You will receive your item via email after payment verification and delivery.`,
     html: `
       <div style="font-family:Arial,sans-serif;line-height:1.6">
-        <h2>${settings.store_name}</h2>
+        <h2>FluxCord</h2>
         <p>Order <strong>${code}</strong> has been received.</p>
         <p>You will receive your item via email after payment verification and delivery.</p>
         <p><strong>Total:</strong> ৳${total.toLocaleString('en-BD')}</p>
@@ -986,6 +1016,44 @@ app.post('/api/orders', auth, async (req, res) => {
     order_code: code,
     total,
     items: normalizedItems
+  });
+});
+
+app.get('/api/account/profile-page', auth, async (req, res) => {
+  if (req.user.admin) return fail(res, 403, 'Admin accounts do not have customer profiles.');
+
+  const requested = usernameSlug(req.query.username || req.user.name || 'user');
+  if (requested !== usernameSlug(req.user.name || 'user')) {
+    return fail(res, 403, 'This profile belongs to another account.');
+  }
+
+  const { data: orders, error: orderError } = await supabase
+    .from('orders')
+    .select('id,order_code,email,total,status,created_at,payment_method,trxid,order_items(id,product_id,name,price,quantity)')
+    .or(`user_id.eq.${req.user.id},email.eq.${cleanEmail(req.user.email)}`)
+    .order('id', { ascending: false });
+
+  if (orderError) return fail(res, 500, 'Could not load your transactions.');
+
+  const orderIds = (orders || []).map((order) => order.id);
+  const { data: reviews } = orderIds.length
+    ? await supabase.from('reviews').select('order_id,product_id').eq('user_id', req.user.id).in('order_id', orderIds)
+    : { data: [] };
+  const reviewed = new Set((reviews || []).map((review) => `${review.order_id}:${review.product_id}`));
+
+  const safeOrders = (orders || []).map((order) => ({
+    ...order,
+    order_items: (order.order_items || []).map((item) => ({ ...item, reviewed: reviewed.has(`${order.id}:${item.product_id}`) }))
+  }));
+
+  const delivered = safeOrders.filter((order) => order.status === 'DELIVERED');
+  const totalSpend = safeOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const lastPurchase = safeOrders[0]?.created_at || null;
+
+  return res.json({
+    user: { id: req.user.id, name: req.user.name || 'Customer', email: req.user.email, username: requested },
+    orders: safeOrders,
+    stats: { total_spend: totalSpend, order_count: safeOrders.length, delivered_count: delivered.length, last_purchase: lastPurchase }
   });
 });
 
@@ -1005,7 +1073,24 @@ app.get('/api/orders', auth, async (req, res) => {
     return fail(res, 500, 'Could not load orders.');
   }
 
-  return res.json(data || []);
+  const orders = data || [];
+  if (!req.user.admin && orders.length) {
+    const orderIds = orders.map((order) => order.id);
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('order_id,product_id')
+      .in('order_id', orderIds)
+      .eq('user_id', req.user.id);
+    const reviewed = new Set((reviews || []).map((review) => `${review.order_id}:${review.product_id}`));
+    orders.forEach((order) => {
+      order.order_items = (order.order_items || []).map((item) => ({
+        ...item,
+        reviewed: reviewed.has(`${order.id}:${item.product_id}`)
+      }));
+    });
+  }
+
+  return res.json(orders);
 });
 
 app.get('/api/orders/:code', async (req, res) => {
