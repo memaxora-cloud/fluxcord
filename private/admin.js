@@ -724,10 +724,6 @@ async function settings() {
   const current = await api('/api/settings');
 
   const keys = [
-    'store_name',
-    'tagline',
-    'hero_title',
-    'hero_description',
     'stat_customer_bonus',
     'stat_sold_bonus',
     'discord',
@@ -743,7 +739,7 @@ async function settings() {
     <div class="panel">
       <h2>Website Customization</h2>
       <div class="notice" style="margin-bottom:15px">
-        Edit the store content here without touching the code. Use a line break in Hero Title to create two lines.
+        Manage social links, support email, legal links and store statistics. Core FluxCord branding and hero copy stay fixed for a consistent storefront.
       </div>
       <form id="settingsForm" class="setting-grid">
         ${keys.map((key) => `
